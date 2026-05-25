@@ -1311,23 +1311,42 @@ async function unverifyInvoice(invoiceNo) {
              openModal('invoice-payments-modal');
         }
 
-         // NEW: دالة لإنشاء وتحميل الفاتورة مباشرة بصيغة PDF A4
+         // NEW: دالة لإنشاء وتحميل الفاتورة مباشرة بصيغة PDF A4 مع حماية التناسب للأجهزة المحمولة
         function downloadInvoicePDF(callback) {
             const element = document.getElementById('invoice-print-content');
             const invoiceNo = document.getElementById('print-invoice-no').textContent || 'invoice';
             
+            // تخزين العرض الأصلي للمستند قبل التعديل المؤقت
+            const originalWidth = element.style.width;
+            const originalPadding = element.style.padding;
+            
+            // فرض العرض القياسي A4 المكتبي (800 بكسل) وحشوة مناسبة مؤقتاً للتصدير
+            element.style.width = '800px';
+            element.style.padding = '30px';
+            
             const opt = {
-                margin:       12, // mm
+                margin:       10, // مم
                 filename:     `Meuble_Art_Design_Facture_${invoiceNo}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, letterRendering: true, logging: false },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    letterRendering: true, 
+                    logging: false,
+                    width: 800
+                },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
             html2pdf().set(opt).from(element).save().then(() => {
+                // إرجاع التنسيق الأصلي للمستند بعد الحفظ
+                element.style.width = originalWidth;
+                element.style.padding = originalPadding;
                 if (typeof callback === 'function') callback();
             }).catch((err) => {
                 console.error('Error generating PDF:', err);
+                element.style.width = originalWidth;
+                element.style.padding = originalPadding;
                 if (typeof callback === 'function') callback();
             });
         }
@@ -1379,12 +1398,11 @@ async function unverifyInvoice(invoiceNo) {
 
             openModal('printable-invoice-modal');
             
-            // التشغيل المباشر لتحميل الـ PDF ثم إغلاق النافذة
+            // التشغيل المباشر لطباعة الفاتورة عبر نافذة الطباعة الافتراضية للجهاز ثم إغلاق النافذة
             setTimeout(() => {
-                downloadInvoicePDF(() => {
-                    closeModal('printable-invoice-modal');
-                });
-            }, 600);
+                window.print();
+                closeModal('printable-invoice-modal');
+            }, 300);
         }
 
 
