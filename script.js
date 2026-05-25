@@ -1311,6 +1311,27 @@ async function unverifyInvoice(invoiceNo) {
              openModal('invoice-payments-modal');
         }
 
+         // NEW: دالة لإنشاء وتحميل الفاتورة مباشرة بصيغة PDF A4
+        function downloadInvoicePDF(callback) {
+            const element = document.getElementById('invoice-print-content');
+            const invoiceNo = document.getElementById('print-invoice-no').textContent || 'invoice';
+            
+            const opt = {
+                margin:       12, // mm
+                filename:     `Meuble_Art_Design_Facture_${invoiceNo}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                if (typeof callback === 'function') callback();
+            }).catch((err) => {
+                console.error('Error generating PDF:', err);
+                if (typeof callback === 'function') callback();
+            });
+        }
+
         // NEW: دالة لإنشاء وعرض الفاتورة القابلة للطباعة
         function generatePrintableInvoice(invoiceNo) {
             const invoice = allInvoices.find(inv => String(inv.InvoiceNo).trim() === String(invoiceNo).trim());
@@ -1358,11 +1379,12 @@ async function unverifyInvoice(invoiceNo) {
 
             openModal('printable-invoice-modal');
             
-            // التشغيل المباشر للطباعة ثم إغلاق النافذة
+            // التشغيل المباشر لتحميل الـ PDF ثم إغلاق النافذة
             setTimeout(() => {
-                window.print();
-                closeModal('printable-invoice-modal');
-            }, 500);
+                downloadInvoicePDF(() => {
+                    closeModal('printable-invoice-modal');
+                });
+            }, 600);
         }
 
 
