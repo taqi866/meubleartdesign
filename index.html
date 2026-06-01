@@ -224,27 +224,29 @@
                     + إضافة مستخدم جديد
                 </button>
 
-                <div id="user-form" class="bg-white p-6 rounded-xl shadow-md mb-8 hidden">
-                    <h3 id="user-form-title" class="text-xl font-semibold mb-4">نموذج إضافة مستخدم</h3>
-                    <form id="add-user-form" onsubmit="handleUserSubmit(event)">
-                        <input type="hidden" id="EditUsername_Hidden" value="">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-medium text-gray-700">اسم المستخدم</label><input type="text" id="User_Username" required class="input-field"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">كلمة المرور</label><input type="password" id="User_Password" required class="input-field"></div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">نوع الحساب (الصلاحية)</label>
-                                <select id="User_Role" required class="input-field">
-                                    <option value="admin">مسؤول (Admin)</option>
-                                    <option value="user">مستخدم عادي (User - فواتير فقط)</option>
-                                </select>
+                <div id="user-form" class="hidden" onclick="hideForm('user-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="user-form-title" class="text-xl font-semibold mb-4 border-b pb-2">نموذج إضافة مستخدم</h3>
+                        <form id="add-user-form" onsubmit="handleUserSubmit(event)">
+                            <input type="hidden" id="EditUsername_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">اسم المستخدم</label><input type="text" id="User_Username" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">كلمة المرور</label><input type="password" id="User_Password" required class="input-field"></div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">نوع الحساب (الصلاحية)</label>
+                                    <select id="User_Role" required class="input-field">
+                                        <option value="admin">مسؤول (Admin)</option>
+                                        <option value="user">مستخدم عادي (User - فواتير فقط)</option>
+                                    </select>
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">البريد الإلكتروني (للاستعادة)</label><input type="email" id="User_Email" required class="input-field"></div>
                             </div>
-                            <div><label class="block text-sm font-medium text-gray-700">البريد الإلكتروني (للاستعادة)</label><input type="email" id="User_Email" required class="input-field"></div>
-                        </div>
-                        <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
-                            <button type="submit" id="user-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ المستخدم</button>
-                            <button type="button" onclick="hideForm('user-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
-                        </div>
-                    </form>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="user-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ المستخدم</button>
+                                <button type="button" onclick="hideForm('user-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 
                 <div class="bg-white p-6 rounded-xl shadow-md">
@@ -325,31 +327,33 @@
                     + إضافة فاتورة جديدة
                 </button>
 
-                <div id="invoice-form" class="bg-white p-6 rounded-xl shadow-md mb-8 hidden">
-                    <h3 id="invoice-form-title" class="text-xl font-semibold mb-4">نموذج إضافة فاتورة</h3>
-                    <form id="add-invoice-form" onsubmit="handleInvoiceSubmit(event)">
-                        <input type="hidden" id="InvoiceID_Hidden" value="">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div><label class="block text-sm font-medium text-gray-700">رقم الفاتورة (InvoiceNo)</label><input type="text" id="InvoiceNo" required class="input-field"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">اسم الزبون</label><input type="text" id="CustomerName" required class="input-field"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">هاتف الزبون</label><input type="tel" id="CustomerPhone" required class="input-field"></div>
-                            
-                            <div><label class="block text-sm font-medium text-gray-700">التاريخ</label><input type="date" id="Date" value="" required class="input-field"></div>
-                            
-                            <div><label class="block text-sm font-medium text-gray-700">المجموع (TotalAmount)</label><input type="number" id="TotalAmount" step="0.01" required class="input-field"></div>
-                            
-                            <div id="initial-paid-container"><label class="block text-sm font-medium text-gray-700">المبلغ المدفوع مبدئياً</label><input type="number" id="InitialPaidAmount" step="0.01" value="0" class="input-field"></div>
-                            
-                            <div><label class="block text-sm font-medium text-gray-700">تكلفة البضاعة (Cost) - اختياري</label><input type="number" id="Cost" step="0.01" class="input-field"></div>
-                            
-                            <div class="md:col-span-3"><label class="block text-sm font-medium text-gray-700">وصف البضاعة</label><textarea id="ItemDescription" rows="2" class="input-field"></textarea></div>
-                            <div class="md:col-span-3"><label class="block text-sm font-medium text-gray-700">ملاحظات</label><textarea id="Notes" rows="2" class="input-field"></textarea></div>
-                        </div>
-                        <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
-                            <button type="submit" id="invoice-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ الفاتورة</button>
-                            <button type="button" onclick="hideForm('invoice-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
-                        </div>
-                    </form>
+                <div id="invoice-form" class="hidden" onclick="hideForm('invoice-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="invoice-form-title" class="text-xl font-semibold mb-4 border-b pb-2">نموذج إضافة فاتورة</h3>
+                        <form id="add-invoice-form" onsubmit="handleInvoiceSubmit(event)">
+                            <input type="hidden" id="InvoiceID_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">رقم الفاتورة (InvoiceNo)</label><input type="text" id="InvoiceNo" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">اسم الزبون</label><input type="text" id="CustomerName" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">هاتف الزبون</label><input type="tel" id="CustomerPhone" required class="input-field"></div>
+                                
+                                <div><label class="block text-sm font-medium text-gray-700">التاريخ</label><input type="date" id="Date" value="" required class="input-field"></div>
+                                
+                                <div><label class="block text-sm font-medium text-gray-700">المجموع (TotalAmount)</label><input type="number" id="TotalAmount" step="0.01" required class="input-field"></div>
+                                
+                                <div id="initial-paid-container"><label class="block text-sm font-medium text-gray-700">المبلغ المدفوع مبدئياً</label><input type="number" id="InitialPaidAmount" step="0.01" value="0" class="input-field"></div>
+                                
+                                <div><label class="block text-sm font-medium text-gray-700">تكلفة البضاعة (Cost) - اختياري</label><input type="number" id="Cost" step="0.01" class="input-field"></div>
+                                
+                                <div class="md:col-span-3"><label class="block text-sm font-medium text-gray-700">وصف البضاعة</label><textarea id="ItemDescription" rows="2" class="input-field"></textarea></div>
+                                <div class="md:col-span-3"><label class="block text-sm font-medium text-gray-700">ملاحظات</label><textarea id="Notes" rows="2" class="input-field"></textarea></div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="invoice-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ الفاتورة</button>
+                                <button type="button" onclick="hideForm('invoice-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 
                 <div id="invoice-summary-stats" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -413,29 +417,31 @@
                     + إضافة عامل جديد
                 </button>
 
-                <div id="worker-form" class="bg-white p-6 rounded-xl shadow-md mb-8 hidden">
-                    <h3 id="worker-form-title" class="text-xl font-semibold mb-4">نموذج إضافة عامل</h3>
-                    <form id="add-worker-form" onsubmit="handleWorkerSubmit(event)">
-                        <input type="hidden" id="WorkerID_Hidden" value="">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div><label class="block text-sm font-medium text-gray-700">الاسم</label><input type="text" id="WorkerName" required class="input-field"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">الهاتف</label><input type="tel" id="WorkerPhone" class="input-field"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">الراتب الشهري</label><input type="number" id="MonthlySalary" step="0.01" required class="input-field"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">تاريخ البدء</label><input type="date" id="StartDate" value="" required class="input-field"></div>
-                             <div>
-                                 <label class="block text-sm font-medium text-gray-700">حالة العامل</label>
-                                 <select id="WorkerIsActive" required class="input-field">
-                                     <option value="TRUE">نشط</option>
-                                     <option value="FALSE">غير نشط</option>
-                                 </select>
-                             </div>
-                            <div class="md:col-span-3"><label class="block text-sm font-medium text-gray-700">ملاحظات</label><textarea id="WorkerNotes" rows="2" class="input-field"></textarea></div>
-                        </div>
-                        <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
-                            <button type="submit" id="worker-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ العامل</button>
-                            <button type="button" onclick="hideForm('worker-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
-                        </div>
-                    </form>
+                <div id="worker-form" class="hidden" onclick="hideForm('worker-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="worker-form-title" class="text-xl font-semibold mb-4 border-b pb-2">نموذج إضافة عامل</h3>
+                        <form id="add-worker-form" onsubmit="handleWorkerSubmit(event)">
+                            <input type="hidden" id="WorkerID_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">الاسم</label><input type="text" id="WorkerName" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">الهاتف</label><input type="tel" id="WorkerPhone" class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">الراتب الشهري</label><input type="number" id="MonthlySalary" step="0.01" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">تاريخ البدء</label><input type="date" id="StartDate" value="" required class="input-field"></div>
+                                 <div>
+                                     <label class="block text-sm font-medium text-gray-700">حالة العامل</label>
+                                     <select id="WorkerIsActive" required class="input-field">
+                                         <option value="TRUE">نشط</option>
+                                         <option value="FALSE">غير نشط</option>
+                                     </select>
+                                 </div>
+                                <div class="md:col-span-3"><label class="block text-sm font-medium text-gray-700">ملاحظات</label><textarea id="WorkerNotes" rows="2" class="input-field"></textarea></div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="worker-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ العامل</button>
+                                <button type="button" onclick="hideForm('worker-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-md">
                     
@@ -493,21 +499,23 @@
                     + تسجيل مصروف جديد
                 </button>
                 
-                <div id="external-worker-form" class="bg-white p-6 rounded-xl shadow-md mb-8 hidden">
-                    <h3 id="external-worker-form-title" class="text-xl font-semibold mb-4">تسجيل مصروف عامل خارجي</h3>
-                    <form id="add-external-worker-form" onsubmit="handleExternalWorkerSubmit(event)">
-                        <input type="hidden" id="ExternalWorkerID_Hidden" value="">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-medium text-gray-700">التاريخ</label><input type="date" id="ExternalWorkerDate" required class="input-field"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">اسم العامل</label><input type="text" id="ExternalWorkerName" required class="input-field"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">المبلغ</label><input type="number" id="ExternalWorkerAmount" step="0.01" required class="input-field"></div>
-                            <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">ملاحظات</label><textarea id="ExternalWorkerNotes" rows="2" class="input-field"></textarea></div>
-                        </div>
-                        <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
-                            <button type="submit" id="external-worker-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ</button>
-                            <button type="button" onclick="hideForm('external-worker-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
-                        </div>
-                    </form>
+                <div id="external-worker-form" class="hidden" onclick="hideForm('external-worker-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="external-worker-form-title" class="text-xl font-semibold mb-4 border-b pb-2">تسجيل مصروف عامل خارجي</h3>
+                        <form id="add-external-worker-form" onsubmit="handleExternalWorkerSubmit(event)">
+                            <input type="hidden" id="ExternalWorkerID_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">التاريخ</label><input type="date" id="ExternalWorkerDate" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">اسم العامل</label><input type="text" id="ExternalWorkerName" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">المبلغ</label><input type="number" id="ExternalWorkerAmount" step="0.01" required class="input-field"></div>
+                                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">ملاحظات</label><textarea id="ExternalWorkerNotes" rows="2" class="input-field"></textarea></div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="external-worker-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ</button>
+                                <button type="button" onclick="hideForm('external-worker-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-xl shadow-md">
@@ -534,22 +542,24 @@
                 <button onclick="showForm('transport-form')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition duration-150 mb-4">
                     + تسجيل دفعة نقل جديدة
                 </button>
-                <div id="transport-form" class="bg-white p-6 rounded-xl shadow-md mb-8 hidden">
-                    <h3 id="transport-form-title" class="text-xl font-semibold mb-4">نموذج تسجيل دفعة نقل</h3>
-                    <form id="add-transport-form" onsubmit="handleTransportSubmit(event)">
-                        <input type="hidden" id="TransportID_Hidden" value="">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-medium text-gray-700">التاريخ</label><input type="date" id="TransportDate" value="" required class="input-field"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">اسم صاحب النقل</label><input type="text" id="DriverName" required class="input-field"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">المبلغ المدفوع</label><input type="number" id="TransportPaidAmount" step="0.01" required class="input-field"></div>
-                            
-                            <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">ملاحظات</label><textarea id="TransportNotes" rows="2" class="input-field"></textarea></div>
-                        </div>
-                        <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
-                            <button type="submit" id="transport-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ الدفعة</button>
-                            <button type="button" onclick="hideForm('transport-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
-                        </div>
-                    </form>
+                <div id="transport-form" class="hidden" onclick="hideForm('transport-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="transport-form-title" class="text-xl font-semibold mb-4 border-b pb-2">نموذج تسجيل دفعة نقل</h3>
+                        <form id="add-transport-form" onsubmit="handleTransportSubmit(event)">
+                            <input type="hidden" id="TransportID_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">التاريخ</label><input type="date" id="TransportDate" value="" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">اسم صاحب النقل</label><input type="text" id="DriverName" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">المبلغ المدفوع</label><input type="number" id="TransportPaidAmount" step="0.01" required class="input-field"></div>
+                                
+                                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">ملاحظات</label><textarea id="TransportNotes" rows="2" class="input-field"></textarea></div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="transport-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ الدفعة</button>
+                                <button type="button" onclick="hideForm('transport-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-md">
                     
@@ -602,20 +612,22 @@
                     + إضافة محل جديد
                 </button>
                 
-                <div id="shop-form" class="bg-white p-6 rounded-xl shadow-md mb-8 hidden">
-                    <h3 id="shop-form-title" class="text-xl font-semibold mb-4">إضافة محل جديد</h3>
-                    <form id="add-shop-form" onsubmit="handleShopSubmit(event)">
-                        <input type="hidden" id="ShopID_Hidden" value="">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div><label class="block text-sm font-medium text-gray-700">اسم المحل</label><input type="text" id="ShopName" required class="input-field"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">الإيجار الشهري</label><input type="number" id="MonthlyRent" step="0.01" required class="input-field"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">جهة الاتصال</label><input type="text" id="ShopContact" class="input-field"></div>
-                        </div>
-                        <div class="mt-6 flex justify-end">
-                            <button type="submit" id="shop-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ المحل</button>
-                            <button type="button" onclick="hideForm('shop-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
-                        </div>
-                    </form>
+                <div id="shop-form" class="hidden" onclick="hideForm('shop-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="shop-form-title" class="text-xl font-semibold mb-4 border-b pb-2">إضافة محل جديد</h3>
+                        <form id="add-shop-form" onsubmit="handleShopSubmit(event)">
+                            <input type="hidden" id="ShopID_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">اسم المحل</label><input type="text" id="ShopName" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">الإيجار الشهري</label><input type="number" id="MonthlyRent" step="0.01" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">جهة الاتصال</label><input type="text" id="ShopContact" class="input-field"></div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="shop-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ المحل</button>
+                                <button type="button" onclick="hideForm('shop-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-xl shadow-md">
@@ -667,53 +679,55 @@
                     + إضافة فاتورة كهرباء جديدة
                 </button>
 
-                <div id="electricity-form" class="bg-white p-6 rounded-xl shadow-md mb-8 hidden">
-                    <h3 class="text-xl font-semibold mb-4">نموذج إضافة فاتورة كهرباء</h3>
-                    <form id="add-electricity-form" onsubmit="handleElectricitySubmit(event)">
-                        <input type="hidden" id="ElectricityID_Hidden" value="">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div><label class="block text-sm font-medium text-gray-700">الشهر</label>
-                                <select id="ElectricityMonth" required class="input-field">
-                                    <option value="">اختر الشهر</option>
-                                    <option value="1">يناير</option>
-                                    <option value="2">فبراير</option>
-                                    <option value="3">مارس</option>
-                                    <option value="4">أبريل</option>
-                                    <option value="5">مايو</option>
-                                    <option value="6">يونيو</option>
-                                    <option value="7">يوليو</option>
-                                    <option value="8">أغسطس</option>
-                                    <option value="9">سبتمبر</option>
-                                    <option value="10">أكتوبر</option>
-                                    <option value="11">نوفمبر</option>
-                                    <option value="12">ديسمبر</option>
-                                </select>
+                <div id="electricity-form" class="hidden" onclick="hideForm('electricity-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="electricity-form-title" class="text-xl font-semibold mb-4 border-b pb-2">نموذج إضافة فاتورة كهرباء</h3>
+                        <form id="add-electricity-form" onsubmit="handleElectricitySubmit(event)">
+                            <input type="hidden" id="ElectricityID_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">الشهر</label>
+                                    <select id="ElectricityMonth" required class="input-field">
+                                        <option value="">اختر الشهر</option>
+                                        <option value="1">يناير</option>
+                                        <option value="2">فبراير</option>
+                                        <option value="3">مارس</option>
+                                        <option value="4">أبريل</option>
+                                        <option value="5">مايو</option>
+                                        <option value="6">يونيو</option>
+                                        <option value="7">يوليو</option>
+                                        <option value="8">أغسطس</option>
+                                        <option value="9">سبتمبر</option>
+                                        <option value="10">أكتوبر</option>
+                                        <option value="11">نوفمبر</option>
+                                        <option value="12">ديسمبر</option>
+                                    </select>
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">السنة</label>
+                                    <input type="number" id="ElectricityYear" min="2024" max="2030" value="2024" required class="input-field">
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">المبلغ</label>
+                                    <input type="number" id="ElectricityAmount" step="0.01" required class="input-field">
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">تاريخ الدفع</label>
+                                    <input type="date" id="ElectricityDate" required class="input-field">
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">رقم الفاتورة</label>
+                                    <input type="text" id="ElectricityBillNo" class="input-field" placeholder="اختياري">
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">المحل/الموقع</label>
+                                    <input type="text" id="ElectricityLocation" class="input-field" placeholder="مثال: المحل الرئيسي">
+                                </div>
+                                <div class="md:col-span-3">
+                                    <label class="block text-sm font-medium text-gray-700">ملاحظات</label>
+                                    <textarea id="ElectricityNotes" rows="2" class="input-field"></textarea>
+                                </div>
                             </div>
-                            <div><label class="block text-sm font-medium text-gray-700">السنة</label>
-                                <input type="number" id="ElectricityYear" min="2024" max="2030" value="2024" required class="input-field">
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="electricity-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ فاتورة الكهرباء</button>
+                                <button type="button" onclick="hideForm('electricity-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
                             </div>
-                            <div><label class="block text-sm font-medium text-gray-700">المبلغ</label>
-                                <input type="number" id="ElectricityAmount" step="0.01" required class="input-field">
-                            </div>
-                            <div><label class="block text-sm font-medium text-gray-700">تاريخ الدفع</label>
-                                <input type="date" id="ElectricityDate" required class="input-field">
-                            </div>
-                            <div><label class="block text-sm font-medium text-gray-700">رقم الفاتورة</label>
-                                <input type="text" id="ElectricityBillNo" class="input-field" placeholder="اختياري">
-                            </div>
-                            <div><label class="block text-sm font-medium text-gray-700">المحل/الموقع</label>
-                                <input type="text" id="ElectricityLocation" class="input-field" placeholder="مثال: المحل الرئيسي">
-                            </div>
-                            <div class="md:col-span-3">
-                                <label class="block text-sm font-medium text-gray-700">ملاحظات</label>
-                                <textarea id="ElectricityNotes" rows="2" class="input-field"></textarea>
-                            </div>
-                        </div>
-                        <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
-                            <button type="submit" id="electricity-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ فاتورة الكهرباء</button>
-                            <button type="button" onclick="hideForm('electricity-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-xl shadow-md">
