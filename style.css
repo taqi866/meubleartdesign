@@ -369,12 +369,385 @@ a, button, select, input, i, .confirmation-buttons {
     top: 12px;
     right: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    padding: 0 !important;
+    padding: 0 !impor8tant;
 }
 
-/* إضافة تباعد لكي لا يتم تغطية المحتوى بالزر الدائري الجديد */
+/* إضافة تباعد لكي لا يتم تغطية المحتوى بالزر الدائري الجديد وكذلك شريط التنقل السفلي */
 @media (max-width: 768px) {
     .main-content {
         padding-top: 60px !important;
+        padding-bottom: 80px !important; /* مساحة لعدم تغطية المحتوى بشريط التنقل السفلي */
+    }
+
+    /* ==========================================
+       تحويل الجداول إلى بطاقات عصرية فائقة التطور
+       ========================================== */
+    .table-responsive {
+        background: transparent !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+    }
+
+    .table-responsive table, 
+    .table-responsive thead, 
+    .table-responsive tbody, 
+    .table-responsive th, 
+    .table-responsive td, 
+    .table-responsive tr {
+        display: block;
+        width: 100% !important;
+    }
+    
+    .table-responsive thead {
+        display: none !important; /* إخفاء الهيدر التقليدي */
+    }
+
+    /* تصميم البطاقة الأساسي */
+    .table-responsive tbody tr {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 16px !important;
+        margin-bottom: 16px !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02) !important;
+        transition: all 0.2s ease-in-out !important;
+        position: relative;
+    }
+    
+    .table-responsive tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    /* 1. تصميم بطاقات الفواتير المخصص */
+    #invoices-table-body tr {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-gap: 8px !important;
+    }
+    #invoices-table-body td {
+        border: none !important;
+        padding: 0 !important;
+        white-space: normal !important;
+    }
+    #invoices-table-body td:nth-child(1) { /* رقم الفاتورة */
+        grid-column: 1;
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #1e293b;
+    }
+    #invoices-table-body td:nth-child(6) { /* الحالة */
+        grid-column: 2;
+        text-align: left;
+    }
+    #invoices-table-body td:nth-child(2) { /* اسم الزبون */
+        grid-column: 1 / span 2;
+        font-size: 0.95rem;
+        color: #475569;
+        font-weight: 700;
+        margin-top: 2px;
+    }
+    #invoices-table-body td:nth-child(3) { /* التاريخ */
+        grid-column: 1;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-top: 2px;
+    }
+    #invoices-table-body td:nth-child(7) { /* حالة المصادقة */
+        grid-column: 2;
+        text-align: left;
+        margin-top: 2px;
+    }
+    #invoices-table-body td:nth-child(4) { /* المجموع */
+        grid-column: 1;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 8px !important;
+        margin-top: 8px;
+    }
+    #invoices-table-body td:nth-child(4)::before {
+        content: "إجمالي المبلغ:";
+        font-size: 0.75rem;
+        color: #64748b;
+        display: block;
+        font-weight: normal;
+    }
+    #invoices-table-body td:nth-child(5) { /* الباقي */
+        grid-column: 2;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 8px !important;
+        margin-top: 8px;
+        text-align: left;
+    }
+    #invoices-table-body td:nth-child(5)::before {
+        content: "الباقي:";
+        font-size: 0.75rem;
+        color: #64748b;
+        display: block;
+        font-weight: normal;
+    }
+    #invoices-table-body td:nth-child(8) { /* الإجراءات */
+        grid-column: 1 / span 2;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 12px !important;
+        margin-top: 8px;
+        display: flex !important;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    /* 2. تصميم بطاقات الرواتب والعمال المخصص */
+    #workers-table-body tr {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-gap: 8px !important;
+    }
+    #workers-table-body td {
+        border: none !important;
+        padding: 0 !important;
+        white-space: normal !important;
+    }
+    #workers-table-body td:nth-child(1) { /* الاسم وحالة العامل */
+        grid-column: 1 / span 2;
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #1e293b;
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+    }
+    #workers-table-body td:nth-child(2) { /* الراتب الشهري */
+        grid-column: 1;
+        margin-top: 6px;
+    }
+    #workers-table-body td:nth-child(2)::before {
+        content: "الراتب الشهري:";
+        font-size: 0.75rem;
+        color: #64748b;
+        display: block;
+    }
+    #workers-table-body td:nth-child(3) { /* إجمالي المدفوع */
+        grid-column: 2;
+        text-align: left;
+        margin-top: 6px;
+    }
+    #workers-table-body td:nth-child(3)::before {
+        content: "إجمالي المدفوع:";
+        font-size: 0.75rem;
+        color: #64748b;
+        display: block;
+    }
+    #workers-table-body td:nth-child(4) { /* الباقي/الدين */
+        grid-column: 1 / span 2;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 8px !important;
+        margin-top: 8px;
+        font-weight: bold;
+    }
+    #workers-table-body td:nth-child(4)::before {
+        content: "الدين المتبقي (لهذا الشهر): ";
+        font-size: 0.75rem;
+        color: #64748b;
+        font-weight: normal;
+    }
+    #workers-table-body td:nth-child(5) { /* الإجراءات */
+        grid-column: 1 / span 2;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 12px !important;
+        margin-top: 8px;
+        display: flex !important;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    /* 3. تصميم بطاقات النقل المخصص */
+    #transport-table-body tr {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-gap: 8px !important;
+    }
+    #transport-table-body td {
+        border: none !important;
+        padding: 0 !important;
+        white-space: normal !important;
+    }
+    #transport-table-body td:nth-child(2) { /* اسم السائق */
+        grid-column: 1;
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #1e293b;
+    }
+    #transport-table-body td:nth-child(1) { /* التاريخ */
+        grid-column: 2;
+        text-align: left;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+    #transport-table-body td:nth-child(3) { /* المبلغ المدفوع */
+        grid-column: 1 / span 2;
+        font-size: 0.95rem;
+        margin-top: 4px;
+        background: #fffbeb;
+        padding: 6px 12px !important;
+        border-radius: 8px;
+        display: flex !important;
+        justify-content: space-between;
+    }
+    #transport-table-body td:nth-child(3)::before {
+        content: "المبلغ المدفوع:";
+        font-weight: bold;
+        color: #b45309;
+    }
+    #transport-table-body td:nth-child(4) { /* الملاحظات */
+        grid-column: 1 / span 2;
+        margin-top: 4px;
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+    #transport-table-body td:nth-child(4)::before {
+        content: "ملاحظات: ";
+        font-weight: bold;
+    }
+    #transport-table-body td:nth-child(5) { /* الإجراءات */
+        grid-column: 1 / span 2;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 12px !important;
+        margin-top: 8px;
+        display: flex !important;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    /* 4. تصميم بطاقات عمال خارجيين المخصص */
+    #external-workers-table-body tr {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-gap: 8px !important;
+    }
+    #external-workers-table-body td {
+        border: none !important;
+        padding: 0 !important;
+        white-space: normal !important;
+    }
+    #external-workers-table-body td:nth-child(2) { /* اسم العامل */
+        grid-column: 1;
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #1e293b;
+    }
+    #external-workers-table-body td:nth-child(1) { /* التاريخ */
+        grid-column: 2;
+        text-align: left;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+    #external-workers-table-body td:nth-child(3) { /* المبلغ */
+        grid-column: 1 / span 2;
+        font-size: 0.95rem;
+        margin-top: 4px;
+        background: #fef2f2;
+        padding: 6px 12px !important;
+        border-radius: 8px;
+        display: flex !important;
+        justify-content: space-between;
+    }
+    #external-workers-table-body td:nth-child(3)::before {
+        content: "المبلغ المدفوع:";
+        font-weight: bold;
+        color: #991b1b;
+    }
+    #external-workers-table-body td:nth-child(4) { /* الملاحظات */
+        grid-column: 1 / span 2;
+        margin-top: 4px;
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+    #external-workers-table-body td:nth-child(4)::before {
+        content: "ملاحظات: ";
+        font-weight: bold;
+    }
+    #external-workers-table-body td:nth-child(5) { /* الإجراءات */
+        grid-column: 1 / span 2;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 12px !important;
+        margin-top: 8px;
+        display: flex !important;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    /* 5. التصميم العام والاحتياطي لكافة الجداول الأخرى (المحلات، الكهرباء، المستخدمين) */
+    .table-responsive tbody tr:not(#invoices-table-body tr):not(#workers-table-body tr):not(#external-workers-table-body tr):not(#transport-table-body tr) {
+        display: block !important;
+    }
+    .table-responsive tbody tr:not(#invoices-table-body tr):not(#workers-table-body tr):not(#external-workers-table-body tr):not(#transport-table-body tr) td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        border: none !important;
+        padding: 8px 0 !important;
+        border-bottom: 1px dashed #f1f5f9 !important;
+        width: 100% !important;
+        white-space: normal !important;
+    }
+    .table-responsive tbody tr:not(#invoices-table-body tr):not(#workers-table-body tr):not(#external-workers-table-body tr):not(#transport-table-body tr) td:last-child {
+        border-bottom: none !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+        padding-top: 12px !important;
+    }
+
+    /* إضافة تصنيفات تلقائية للجداول الاحتياطية */
+    /* جدول المحلات */
+    #shops-table-body td:nth-child(1)::before { content: "المحل:"; font-weight: bold; color: #64748b; }
+    #shops-table-body td:nth-child(2)::before { content: "الإيجار الشهري:"; font-weight: bold; color: #64748b; }
+    #shops-table-body td:nth-child(3)::before { content: "الدين الحالي:"; font-weight: bold; color: #64748b; }
+    #shops-table-body td:nth-child(4)::before { content: "الإجراءات:"; font-weight: bold; color: #64748b; }
+
+    /* جدول المستخدمين */
+    #users-table-body td:nth-child(1)::before { content: "اسم المستخدم:"; font-weight: bold; color: #64748b; }
+    #users-table-body td:nth-child(2)::before { content: "البريد الإلكتروني:"; font-weight: bold; color: #64748b; }
+    #users-table-body td:nth-child(3)::before { content: "الصلاحية:"; font-weight: bold; color: #64748b; }
+    #users-table-body td:nth-child(4)::before { content: "الإجراءات:"; font-weight: bold; color: #64748b; }
+
+    /* جدول الكهرباء */
+    #electricity-table-body td:nth-child(1)::before { content: "المدة الزمنية:"; font-weight: bold; color: #64748b; }
+    #electricity-table-body td:nth-child(2)::before { content: "المكان:"; font-weight: bold; color: #64748b; }
+    #electricity-table-body td:nth-child(3)::before { content: "المبلغ:"; font-weight: bold; color: #64748b; }
+    #electricity-table-body td:nth-child(4)::before { content: "تاريخ الأداء:"; font-weight: bold; color: #64748b; }
+    #electricity-table-body td:nth-child(5)::before { content: "رقم الفاتورة:"; font-weight: bold; color: #64748b; }
+    #electricity-table-body td:nth-child(6)::before { content: "ملاحظات:"; font-weight: bold; color: #64748b; }
+    #electricity-table-body td:nth-child(7)::before { content: "الإجراءات:"; font-weight: bold; color: #64748b; }
+
+    /* تحسين شكل الأزرار داخل الجداول على الهاتف لتكون واضحة وجذابة وسهلة اللمس */
+    .table-responsive button, 
+    .table-responsive a {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        padding: 6px 14px !important;
+        border-radius: 10px !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        color: #334155;
+    }
+    
+    .table-responsive button.text-blue-600 { color: #2563eb; border-color: #bfdbfe; background: #eff6ff; }
+    .table-responsive button.text-red-600 { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+    .table-responsive button.text-amber-600 { color: #d97706; border-color: #fde68a; background: #fffbeb; }
+    .table-responsive button.text-purple-600 { color: #7c3aed; border-color: #ddd6fe; background: #f5f3ff; }
+    .table-responsive button.text-green-600 { color: #16a34a; border-color: #bbf7d0; background: #f0fdf4; }
+    .table-responsive button.text-indigo-600 { color: #4f46e5; border-color: #c7d2fe; background: #e0e7ff; }
+
+    /* حماية من تداخل الأزرار الطويلة */
+    .table-responsive td button:disabled {
+        background: #f1f5f9 !important;
+        color: #94a3b8 !important;
+        border-color: #e2e8f0 !important;
     }
 }
