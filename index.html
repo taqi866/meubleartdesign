@@ -45,9 +45,19 @@
                     </div>
                 </div>
 
-                <button type="submit" id="login-submit-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition duration-150 flex items-center justify-center">
-                    <span>تسجيل الدخول</span>
-                </button>
+                <div class="flex space-x-2 space-x-reverse mb-4">
+                    <button type="submit" id="login-submit-btn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition duration-150 flex items-center justify-center">
+                        <span>تسجيل الدخول</span>
+                    </button>
+                    <button type="button" onclick="loginWithFaceID()" id="faceid-login-btn" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 text-amber-500 font-bold p-2 rounded-xl shadow-sm transition duration-150 flex items-center justify-center w-12" title="تسجيل الدخول بواسطة بصمة الوجه Face ID">
+                        <svg class="h-6 w-6 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            <path d="M9 9h.01M15 9h.01"/>
+                            <path d="M12 9v4"/>
+                            <path d="M9 15s1.5 2 3 2 3-2 3-2"/>
+                        </svg>
+                    </button>
+                </div>
                 <div class="text-center mt-4">
                     <a href="#" onclick="showConfirmationModal(event)" class="text-sm text-gray-500 hover:text-amber-600">نسيت كلمة المرور؟</a>
                 </div>
@@ -72,8 +82,55 @@
                 <button onclick="handleForgotPassword(event)" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl">تأكيد الإرسال</button>
             </div>
         </div>
+    <!-- Face ID Setup Modal -->
+    <div id="faceid-setup-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm text-center modal-content-custom" onclick="event.stopPropagation()">
+            <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-200">
+                <svg class="h-8 w-8 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                    <path d="M9 9h.01M15 9h.01"/>
+                    <path d="M12 9v4"/>
+                    <path d="M9 15s1.5 2 3 2 3-2 3-2"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">تفعيل بصمة الوجه (Face ID)</h3>
+            <p class="text-gray-600 text-sm mb-6 leading-relaxed">
+                هل تريد تفعيل خاصية Face ID لتسجيل الدخول السريع في المرات القادمة بدلاً من كتابة كلمة المرور يدوياً؟
+            </p>
+            <div class="flex space-x-3 space-x-reverse justify-center">
+                <button id="activate-faceid-btn" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition duration-150 text-sm">
+                    تفعيل الآن
+                </button>
+                <button onclick="closeModal('faceid-setup-modal')" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2.5 px-6 rounded-xl border border-gray-300 transition duration-150 text-sm">
+                    ليس الآن
+                </button>
+            </div>
+        </div>
     </div>
-    
+
+    <!-- Face ID Scanning Modal -->
+    <div id="faceid-scanning-modal" class="fixed inset-0 bg-gray-900 bg-opacity-95 hidden items-center justify-center p-4 z-[70] backdrop-blur-md">
+        <div class="text-center" onclick="event.stopPropagation()">
+            <!-- Animated Scanner Container -->
+            <div class="relative w-32 h-32 mx-auto mb-6 flex items-center justify-center border border-dashed border-amber-500/30 rounded-3xl p-4">
+                <!-- Outer Scanning Frame -->
+                <div class="absolute inset-0 border-2 border-amber-500 rounded-3xl opacity-20 scale-110"></div>
+                <!-- Scanning Line -->
+                <div class="absolute left-0 right-0 h-0.5 bg-amber-500 shadow-[0_0_10px_#f59e0b] animate-scan z-10"></div>
+                
+                <!-- Face SVG Icon -->
+                <svg id="faceid-scan-icon" class="h-20 w-20 text-amber-500 transition-all duration-300 scale-95" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                    <path d="M9 9h.01M15 9h.01"/>
+                    <path d="M12 9v4"/>
+                    <path d="M9 15s1.5 2 3 2 3-2 3-2"/>
+                </svg>
+            </div>
+            <h3 id="faceid-scan-status" class="text-xl font-bold text-white mb-2 tracking-wide animate-pulse">جاري فحص بصمة الوجه...</h3>
+            <p class="text-gray-400 text-sm">يرجى النظر مباشرة إلى الكاميرا</p>
+        </div>
+    </div>
+
     <!-- Generic Confirmation Modal (Modern) -->
     <div id="custom-confirm-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-[60] confirmation-modal-overlay">
         <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md confirmation-modal-content text-center" onclick="event.stopPropagation()">
