@@ -969,6 +969,30 @@
                     </form>
                 </div>
             </div>
+            
+            <!-- Mobile Bottom Navigation Bar (Very Premium UI) -->
+            <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-40 flex justify-around items-center py-2 px-1 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+                <a id="mobile-nav-dashboard" href="#" onclick="showView('dashboard'); return false;" class="flex flex-col items-center justify-center text-gray-500 hover:text-amber-500 transition-all duration-200 flex-1">
+                    <i class="fas fa-th-large text-lg"></i>
+                    <span class="text-[10px] mt-1 font-semibold">لوحة التحكم</span>
+                </a>
+                <a id="mobile-nav-invoices" href="#" onclick="showView('invoices'); return false;" class="flex flex-col items-center justify-center text-gray-500 hover:text-amber-500 transition-all duration-200 flex-1">
+                    <i class="fas fa-receipt text-lg"></i>
+                    <span class="text-[10px] mt-1 font-semibold">الفواتير</span>
+                </a>
+                <a id="mobile-nav-workers" href="#" onclick="showView('workers'); return false;" class="flex flex-col items-center justify-center text-gray-500 hover:text-amber-500 transition-all duration-200 flex-1">
+                    <i class="fas fa-users-cog text-lg"></i>
+                    <span class="text-[10px] mt-1 font-semibold">الرواتب</span>
+                </a>
+                <a id="mobile-nav-profit-loss" href="#" onclick="showView('profit-loss'); return false;" class="flex flex-col items-center justify-center text-gray-500 hover:text-amber-500 transition-all duration-200 flex-1">
+                    <i class="fas fa-chart-bar text-lg"></i>
+                    <span class="text-[10px] mt-1 font-semibold">التقارير</span>
+                </a>
+                <button onclick="toggleSidebar();" class="flex flex-col items-center justify-center text-gray-500 hover:text-amber-500 transition-all duration-200 flex-1 focus:outline-none">
+                    <i class="fas fa-ellipsis-h text-lg"></i>
+                    <span class="text-[10px] mt-1 font-semibold">المزيد</span>
+                </button>
+            </div>
         </div>
     </div>
     
