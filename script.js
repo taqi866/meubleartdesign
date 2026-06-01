@@ -714,6 +714,7 @@ async function unverifyInvoice(invoiceNo) {
              const mainApp = document.getElementById('main-app');
              if (mainApp) mainApp.classList.add('hidden');
              document.getElementById('login-view').classList.remove('hidden');
+             restoreLoginButtonState();
              showLoginAlert('تم تسجيل الخروج بنجاح.', 'success');
         }
 
