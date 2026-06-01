@@ -216,7 +216,11 @@ const scriptRunHelper = function(functionName, args, successHandler, successMess
                 'nav-shops',
                 'nav-electricity',
                 'nav-profit-loss',
-                'nav-users'
+                'nav-users',
+                // شريط الجوال السفلي
+                'mobile-nav-dashboard',
+                'mobile-nav-workers',
+                'mobile-nav-profit-loss'
             ];
 
             adminOnlyNavIds.forEach(id => {
@@ -801,6 +805,28 @@ async function unverifyInvoice(invoiceNo) {
              if (currentView === 'external-workers') fetchExternalWorkers();
              if (currentView === 'users') fetchUsers();
              if (currentView === 'profit-loss') fetchProfitLossData();
+
+             // تحديث حالة التبويب النشط في القائمة الجانبية
+             document.querySelectorAll('[id^="nav-"]').forEach(link => {
+                 link.classList.remove('bg-amber-100', 'text-amber-700', 'font-semibold');
+                 link.classList.add('text-gray-700');
+             });
+             const activeSidebarLink = document.getElementById(`nav-${viewId}`);
+             if (activeSidebarLink) {
+                 activeSidebarLink.classList.remove('text-gray-700');
+                 activeSidebarLink.classList.add('bg-amber-100', 'text-amber-700', 'font-semibold');
+             }
+             
+             // تحديث حالة التبويب النشط في شريط الجوال السفلي
+             document.querySelectorAll('[id^="mobile-nav-"]').forEach(link => {
+                 link.classList.remove('text-amber-500', 'scale-105');
+                 link.classList.add('text-gray-500');
+             });
+             const activeMobileLink = document.getElementById(`mobile-nav-${viewId}`);
+             if (activeMobileLink) {
+                 activeMobileLink.classList.remove('text-gray-500');
+                 activeMobileLink.classList.add('text-amber-500', 'scale-105');
+             }
 
              closeSidebar();
         }
@@ -2810,4 +2836,13 @@ async function unverifyInvoice(invoiceNo) {
                  }
              }
         });
+
+        function toggleSidebar() {
+             if (sidebar.classList.contains('translate-x-full')) {
+                 openSidebar();
+             } else {
+                 closeSidebar();
+             }
+        }
+        window.toggleSidebar = toggleSidebar;
 
