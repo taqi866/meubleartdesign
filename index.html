@@ -364,7 +364,7 @@
                     <div class="flex flex-col md:flex-row justify-between mb-4">
                         <input type="text" id="invoice-search" oninput="fetchInvoices()" class="p-2 border border-gray-400 rounded-lg w-full md:w-1/3 mb-4 md:mb-0 focus:ring-amber-500 focus:border-amber-500" placeholder="بحث برقم الفاتورة أو اسم الزبون...">
                         
-                        <div class="flex space-x-2 space-x-reverse">
+                        <div class="flex flex-wrap gap-2">
                              <select id="invoice-filter-year" onchange="fetchInvoices()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500"></select>
                              <select id="invoice-filter-month" onchange="fetchInvoices()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500">
                                  <option value="">كل الأشهر</option>
@@ -382,7 +382,7 @@
                                  <option value="12">12</option>
                              </select>
                              <select id="invoice-filter-status" onchange="fetchInvoices()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500">
-                                 <option value="">كل الحالات</option>
+                                 <option value="">الكل</option>
                                  <option value="Unpaid">غير مدفوعة</option>
                                  <option value="Partial">مدفوعة جزئياً</option>
                                  <option value="Paid">مدفوعة بالكامل</option>
@@ -446,10 +446,10 @@
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-md">
                     
-                    <div class="flex justify-between items-center space-x-2 space-x-reverse mb-4">
-                         <input type="text" id="worker-search" oninput="fetchWorkers()" class="p-2 border border-gray-400 rounded-lg w-1/3 focus:ring-amber-500 focus:border-amber-500" placeholder="بحث باسم العامل...">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                         <input type="text" id="worker-search" oninput="fetchWorkers()" class="p-2 border border-gray-400 rounded-lg w-full md:w-1/3 focus:ring-amber-500 focus:border-amber-500" placeholder="بحث باسم العامل...">
 
-                         <div class="flex space-x-2 space-x-reverse">
+                         <div class="flex flex-wrap gap-2">
                              <select id="worker-filter-year" onchange="fetchWorkers()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500"></select>
                              <select id="worker-filter-month" onchange="fetchWorkers()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500">
                                  <option value="">كل الأشهر</option>
@@ -467,7 +467,7 @@
                                  <option value="12">12</option>
                              </select>
                          </div>
-                         <label class="flex items-center space-x-2 space-x-reverse">
+                         <label class="flex items-center gap-2">
                              <input type="checkbox" id="show-inactive-workers" onchange="fetchWorkers()" class="form-checkbox h-4 w-4 text-amber-600">
                              <span class="text-sm text-gray-700">عرض العمال غير النشطين</span>
                          </label>
@@ -522,7 +522,7 @@
                 <div class="bg-white p-6 rounded-xl shadow-md">
                     <div class="flex flex-col md:flex-row justify-between mb-4">
                         <input type="text" id="external-worker-search" oninput="fetchExternalWorkers()" class="p-2 border border-gray-400 rounded-lg w-full md:w-1/3 mb-4 md:mb-0" placeholder="بحث باسم العامل...">
-                        <div class="flex space-x-2 space-x-reverse">
+                        <div class="flex flex-wrap gap-2">
                              <select id="external-worker-filter-year" onchange="fetchExternalWorkers()" class="p-2 border border-gray-400 rounded-lg"></select>
                              <select id="external-worker-filter-month" onchange="fetchExternalWorkers()" class="p-2 border border-gray-400 rounded-lg">
                                  <option value="">كل الأشهر</option>
@@ -564,7 +564,7 @@
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-md">
                     
-                    <div class="flex justify-end space-x-2 space-x-reverse mb-4">
+                    <div class="flex justify-end flex-wrap gap-2 mb-4">
                              <select id="transport-filter-year" onchange="fetchTransportPayments()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500"></select>
                              <select id="transport-filter-month" onchange="fetchTransportPayments()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500">
                                  <option value="">كل الأشهر</option>
@@ -633,25 +633,27 @@
 
                 <div class="bg-white p-6 rounded-xl shadow-md">
                     
-                    <div class="flex justify-end space-x-2 space-x-reverse mb-4">
-                             <input type="text" id="shop-search" oninput="fetchShops()" class="p-2 border border-gray-400 rounded-lg w-1/3 ml-auto focus:ring-amber-500 focus:border-amber-500" placeholder="بحث باسم المحل...">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                             <input type="text" id="shop-search" oninput="fetchShops()" class="p-2 border border-gray-400 rounded-lg w-full md:w-1/3 focus:ring-amber-500 focus:border-amber-500" placeholder="بحث باسم المحل...">
 
-                             <select id="shop-filter-year" onchange="fetchShopPayments()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500"></select>
-                             <select id="shop-filter-month" onchange="fetchShopPayments()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500">
-                                 <option value="">كل الأشهر</option>
-                                 <option value="1">1</option>
-                                 <option value="2">2</option>
-                                 <option value="3">3</option>
-                                 <option value="4">4</option>
-                                 <option value="5">5</option>
-                                 <option value="6">6</option>
-                                 <option value="7">7</option>
-                                 <option value="8">8</option>
-                                 <option value="9">9</option>
-                                 <option value="10">10</option>
-                                 <option value="11">11</option>
-                                 <option value="12">12</option>
-                             </select>
+                             <div class="flex flex-wrap gap-2">
+                                 <select id="shop-filter-year" onchange="fetchShopPayments()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500"></select>
+                                 <select id="shop-filter-month" onchange="fetchShopPayments()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500">
+                                     <option value="">كل الأشهر</option>
+                                     <option value="1">1</option>
+                                     <option value="2">2</option>
+                                     <option value="3">3</option>
+                                     <option value="4">4</option>
+                                     <option value="5">5</option>
+                                     <option value="6">6</option>
+                                     <option value="7">7</option>
+                                     <option value="8">8</option>
+                                     <option value="9">9</option>
+                                     <option value="10">10</option>
+                                     <option value="11">11</option>
+                                     <option value="12">12</option>
+                                 </select>
+                             </div>
                     </div>
 
                     <h3 class="text-xl font-semibold mb-4">قائمة المحلات وحالة الإيجارات المستحقة</h3>
@@ -732,7 +734,7 @@
                 </div>
 
                 <div class="bg-white p-6 rounded-xl shadow-md">
-                    <div class="flex justify-end space-x-2 space-x-reverse mb-4">
+                    <div class="flex justify-end flex-wrap gap-2 mb-4">
                         <select id="electricity-filter-year" onchange="fetchElectricityBills()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500"></select>
                     </div>
 
