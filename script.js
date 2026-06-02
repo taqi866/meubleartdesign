@@ -1723,7 +1723,7 @@ async function unverifyInvoice(invoiceNo) {
         
         function renderWorkerMonthlySummary(data) {
              document.getElementById('worker-summary-name').textContent = data.name;
-             document.getElementById('worker-summary-salary').textContent = formatNumber(data.salary);
+             document.getElementById('worker-summary-salary').innerHTML = formatNumber(data.salary);
              const tbody = document.getElementById('worker-monthly-summary-body');
              tbody.innerHTML = '';
              
@@ -2267,7 +2267,7 @@ async function unverifyInvoice(invoiceNo) {
         
         function renderShopMonthlySummary(data) {
              document.getElementById('shop-summary-name').textContent = data.name;
-             document.getElementById('shop-summary-rent').textContent = formatNumber(data.rent);
+             document.getElementById('shop-summary-rent').innerHTML = formatNumber(data.rent);
              const tbody = document.getElementById('shop-monthly-summary-body');
              tbody.innerHTML = '';
              
@@ -2743,7 +2743,7 @@ async function unverifyInvoice(invoiceNo) {
             } else if (type === 'shop') {
                  title = `تسجيل دفعة إيجار للمحل: ${name} (المستحق حالياً: ${parseFloat(currentMonthDue) > 0 ? formatNumber(currentMonthDue) : 'مدفوع'})`;
             }
-            document.getElementById('payment-modal-title').textContent = title;
+            document.getElementById('payment-modal-title').innerHTML = title;
         }
 
         function handlePaymentSubmit(event) {
