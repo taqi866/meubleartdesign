@@ -1,4 +1,4 @@
-        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzbskuvRztT35HAuoYLCSMqiFPS8U5wgy_Mtwlg9PBQIe1xwRmE40kwMgOaZLj8Ze5MUw/exec";
+        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyWP7SIO76FG66IB6P3M7B8CBln8VgMAShpsQlYg64VsCG7TTHBAp-weah6bhB85TjK/exec";
 
 let currentView = 'dashboard';
 let allInvoices = [];
