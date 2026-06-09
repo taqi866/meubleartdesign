@@ -1420,7 +1420,7 @@ async function unverifyInvoice(invoiceNo) {
             paymentsTbody.innerHTML = payments.map(p => `
                 <tr>
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 border border-gray-300">${formatDateDMY(p.PaymentDate || p.Date)}</td>
-                    <td class="px-4 py-2 whitespace-nowrap text-sm font-bold text-green-600 border border-gray-300">${formatNumber(p.PaidAmount)} DH</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm font-bold text-green-600 border border-gray-300" style="color: #16a34a;">${formatNumber(p.PaidAmount)} DH</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 border border-gray-300">${p.Notes || '-'}</td>
                 </tr>
             `).join('');
@@ -1479,7 +1479,7 @@ async function unverifyInvoice(invoiceNo) {
             
             let filtered = allWorkers.filter(w => {
                 const matchesQuery = !query || String(w.Name || '').toLowerCase().includes(query);
-                const isActiveMatch = showInactive || w.IsActive === 'TRUE';
+                const isActiveMatch = showInactive || String(w.IsActive).toUpperCase() === 'TRUE';
                 return matchesQuery && isActiveMatch;
             });
 
@@ -1488,7 +1488,7 @@ async function unverifyInvoice(invoiceNo) {
             scriptRunHelper('getWorkers', [{year, month, showInactive}], (data) => { 
                 allWorkers = data; 
                 saveToLocal(StorageKeys.WORKERS, data); 
-                renderWorkersTable(data.filter(w => showInactive || w.IsActive === 'TRUE')); 
+                renderWorkersTable(data.filter(w => showInactive || String(w.IsActive).toUpperCase() === 'TRUE')); 
             });
         }
 
@@ -1517,23 +1517,24 @@ async function unverifyInvoice(invoiceNo) {
                     debtDisplay = `<span class="${isOverdue ? 'text-red-600 font-bold' : 'text-green-600'}">${formatNumber(remainingDebt)} DH</span>`;
                 }
                 
-                const buttonDisabled = worker.IsPaidUpForCycle || worker.IsActive === 'FALSE'; 
-                const buttonText = worker.IsActive === 'FALSE' ? 'غير نشط' : buttonDisabled ? 'مدفوع للشهر الحالي' : 'تسجيل راتب';
+                const isInactive = String(worker.IsActive).toUpperCase() === 'FALSE';
+                const buttonDisabled = worker.IsPaidUpForCycle || isInactive; 
+                const buttonText = isInactive ? 'غير نشط' : buttonDisabled ? 'مدفوع للشهر الحالي' : 'تسجيل راتب';
                 const buttonClass = buttonDisabled ? 'bg-gray-400 text-gray-700 cursor-not-allowed' : 'text-amber-600 hover:text-amber-800';
-                const advanceButtonClass = worker.IsActive === 'FALSE' ? 'bg-gray-400 text-gray-700 cursor-not-allowed' : 'text-blue-600 hover:text-blue-800';
+                const advanceButtonClass = isInactive ? 'bg-gray-400 text-gray-700 cursor-not-allowed' : 'text-blue-600 hover:text-blue-800';
 
-                const statusTag = worker.IsActive === 'FALSE' ? `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-200 text-gray-700 mr-2">غير نشط</span>` : '';
+                const statusTag = isInactive ? `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-200 text-gray-700 mr-2">غير نشط</span>` : '';
 
 
                 return `
-                    <tr class="hover:bg-gray-50 ${worker.IsActive === 'FALSE' ? 'bg-gray-50 text-gray-400' : ''}">
+                    <tr class="hover:bg-gray-50 ${isInactive ? 'bg-gray-50 text-gray-400' : ''}">
                         ${wrapCellContent(`<span class="font-medium text-gray-900">${worker.Name}</span>${statusTag}`)}
                         ${wrapCellContent(formatNumber(worker.MonthlySalary) + ' DH')}
                         ${wrapCellContent(formatNumber(totalAccumulatedPaid) + ' DH')} 
                         <td class="px-4 py-2 whitespace-nowrap text-sm border border-gray-300">${debtDisplay}</td>
                         <td class="px-4 py-2 whitespace-nowrap text-sm font-medium space-x-2 space-x-reverse border border-gray-300">
                             <button ${buttonDisabled ? 'disabled' : ''} onclick="openPaymentModal('worker', '${worker.WorkerID}', '${worker.Name}', ${remainingDebt}, ${remainingDebt})" class="${buttonClass} transition duration-150">${buttonText}</button>
-                            <button ${worker.IsActive === 'FALSE' ? 'disabled' : ''} onclick="openPaymentModal('worker', '${worker.WorkerID}', '${worker.Name}', 0, 0, true)" class="${advanceButtonClass} transition duration-150">تسبيق</button>
+                            <button ${isInactive ? 'disabled' : ''} onclick="openPaymentModal('worker', '${worker.WorkerID}', '${worker.Name}', 0, 0, true)" class="${advanceButtonClass} transition duration-150">تسبيق</button>
                             <button onclick="viewWorkerPayments('${worker.WorkerID}')" class="text-indigo-600 hover:text-indigo-900 transition duration-150">دفعات</button>
                             <button onclick="editWorkerForm('${worker.WorkerID}')" class="text-blue-600 hover:text-blue-800 transition duration-150">تعديل</button>
                             <button onclick="deleteWorker('${worker.WorkerID}')" class="text-red-600 hover:text-red-800 transition duration-150"><i class="fas fa-trash"></i></button>
@@ -1562,11 +1563,11 @@ async function unverifyInvoice(invoiceNo) {
              document.getElementById('MonthlySalary').value = parseFloat(workerData.MonthlySalary);
              document.getElementById('StartDate').value = workerData.StartDate;
              document.getElementById('WorkerNotes').value = workerData.Notes;
-             document.getElementById('WorkerIsActive').value = workerData.IsActive;
+             document.getElementById('WorkerIsActive').value = String(workerData.IsActive).toUpperCase();
         }
 
         function editWorkerForm(workerId) {
-            const worker = allWorkers.find(w => w.WorkerID === workerId);
+            const worker = allWorkers.find(w => String(w.WorkerID) === String(workerId));
             if (!worker) {
                 showAlert('لم يتم العثور على العامل للتعديل.', 'error');
                 return;
