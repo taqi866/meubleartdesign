@@ -1485,10 +1485,20 @@ async function unverifyInvoice(invoiceNo) {
 
             renderWorkersTable(filtered);
             
-            scriptRunHelper('getWorkers', [{year, month, showInactive}], (data) => { 
+            // Fetch all workers (active + inactive) in the background to preserve complete local cache
+            scriptRunHelper('getWorkers', [{year, month, showInactive: true}], (data) => { 
                 allWorkers = data; 
                 saveToLocal(StorageKeys.WORKERS, data); 
-                renderWorkersTable(data.filter(w => showInactive || String(w.IsActive).toUpperCase() === 'TRUE')); 
+                
+                // Re-apply local filters (query & showInactive) on the fresh server data
+                const currentQuery = document.getElementById('worker-search').value.toLowerCase().trim();
+                const currentShowInactive = document.getElementById('show-inactive-workers').checked;
+                const newFiltered = data.filter(w => {
+                    const matchesQuery = !currentQuery || String(w.Name || '').toLowerCase().includes(currentQuery);
+                    const isActiveMatch = currentShowInactive || String(w.IsActive).toUpperCase() === 'TRUE';
+                    return matchesQuery && isActiveMatch;
+                });
+                renderWorkersTable(newFiltered); 
             });
         }
 
@@ -1589,14 +1599,33 @@ async function unverifyInvoice(invoiceNo) {
             const originalText = submitButton.textContent;
             submitButton.disabled = true;
 
-            const optimisticWorker = {
-                WorkerID: document.getElementById('WorkerID_Hidden').value || Date.now().toString(),
+            const workerIdHidden = document.getElementById('WorkerID_Hidden').value;
+            const isEdit = workerIdHidden !== '';
+            
+            const data = {
                 Name: document.getElementById('WorkerName').value,
                 Phone: document.getElementById('WorkerPhone').value,
                 MonthlySalary: document.getElementById('MonthlySalary').value,
                 StartDate: document.getElementById('StartDate').value,
+                Notes: document.getElementById('WorkerNotes').value,
                 IsActive: document.getElementById('WorkerIsActive').value,
-                TotalPaid: "0.00", RemainingDebt: "0.00"
+            };
+
+            const workerID = isEdit ? workerIdHidden : Date.now().toString();
+            const existingWorker = isEdit ? allWorkers.find(w => String(w.WorkerID) === String(workerID)) : null;
+
+            const optimisticWorker = {
+                WorkerID: workerID,
+                Name: data.Name,
+                Phone: data.Phone,
+                MonthlySalary: data.MonthlySalary,
+                StartDate: data.StartDate,
+                Notes: data.Notes,
+                IsActive: data.IsActive,
+                TotalPaid: existingWorker ? existingWorker.TotalPaid : "0.00",
+                RemainingDebt: existingWorker ? existingWorker.RemainingDebt : "0.00",
+                CurrentMonthBalance: existingWorker ? existingWorker.CurrentMonthBalance : "0.00",
+                TotalAccumulatedDebt: existingWorker ? existingWorker.TotalAccumulatedDebt : "0.00"
             };
 
             updateLocalDataAndSync(StorageKeys.WORKERS, allWorkers, optimisticWorker, 'WorkerID');
@@ -1604,21 +1633,10 @@ async function unverifyInvoice(invoiceNo) {
             hideForm('worker-form');
             
             try {
-                const originalInvoiceNo = document.getElementById('WorkerID_Hidden').value;
-                const isEdit = originalInvoiceNo !== '';
-                
-                const data = {
-                    Name: document.getElementById('WorkerName').value,
-                    Phone: document.getElementById('WorkerPhone').value,
-                    MonthlySalary: document.getElementById('MonthlySalary').value,
-                    StartDate: document.getElementById('StartDate').value,
-                    Notes: document.getElementById('WorkerNotes').value,
-                    IsActive: document.getElementById('WorkerIsActive').value,
-                };
+                const originalInvoiceNo = workerID;
 
                 if (isEdit) {
-                    const workerId = document.getElementById('WorkerID_Hidden').value;
-                    scriptRunHelper('editWorker', [workerId, data], (result) => {
+                    scriptRunHelper('editWorker', [workerID, data], (result) => {
                         submitButton.textContent = originalText;
                         submitButton.disabled = false;
                         
