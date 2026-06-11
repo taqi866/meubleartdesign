@@ -1,0 +1,23 @@
+
+=== Search results for: sketch-element-controls ===
+3910: const controls = document.getElementById('sketch-element-controls');
+3927: const controls = document.getElementById('sketch-element-controls');
+
+=== Search results for: sketch-element-text-input ===
+3915: const textInput = document.getElementById('sketch-element-text-input');
+
+=== Search results for: sketch-text-edit-container ===
+3914: const textEdit = document.getElementById('sketch-text-edit-container');
+
+=== Search results for: saveSketchDesign ===
+4051: function saveSketchDesign() {
+4288: window.saveSketchDesign = saveSketchDesign;
+
+=== Search results for: downloadSketchPDF ===
+4146: function downloadSketchPDF() {
+4289: window.downloadSketchPDF = downloadSketchPDF;
+
+=== Search results for: closeSketchEditor ===
+4096: closeSketchEditor();
+4174: function closeSketchEditor() {
+4291: window.closeSketchEditor = closeSketchEditor;

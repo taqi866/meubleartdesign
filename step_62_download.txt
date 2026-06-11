@@ -1,0 +1,56 @@
+Created At: 2026-06-10T17:53:15Z
+Completed At: 2026-06-10T17:53:15Z
+File Path: `file:///c:/Users/hp/Desktop/Meuble%20Art%20Design/script.js`
+Total Lines: 4480
+Total Bytes: 215087
+Showing lines 4170 to 4270
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+4170: function downloadSketchPDF() {
+4171:     const ownerName = document.getElementById('sketch-owner').value.trim();
+4172:     const phone = document.getElementById('sketch-phone').value.trim();
+4173:     const invoiceNo = document.getElementById('sketch-invoice').value.trim();
+4174: 
+4175:     if (!ownerName || !phone || !invoiceNo) {
+4176:         showAlert('يرجى كتابة اسم الزبون والهاتف ورقم الفاتورة قبل طباعة الكروكي.', 'error');
+4177:         return;
+4178:     }
+4179: 
+4180:     document.getElementById('print-sketch-owner').textContent = ownerName;
+4181:     document.getElementById('print-sketch-phone').textContent = phone;
+4182:     document.getElementById('print-sketch-invoice').textContent = invoiceNo;
+4183:     document.getElementById('print-sketch-date').textContent = formatDateDMY(new Date().toISOString().split('T')[0]);
+4184: 
+4185:     showAlert('جاري تحضير الكروكي للطباعة...', 'info');
+4186: 
+4187:     generateSketchImageDataAsync(sketchElements, sketchBgImageSrcData, sketchBgImageOpacity, showSketchGrid, isSketchBW)
+4188:         .then(dataUrl => {
+4189:             const imgElement = document.getElementById('print-sketch-image');
+4190:             imgElement.src = dataUrl;
+4191:             imgElement.onload = function() {
+4192:                 window.print();
+4193:                 imgElement.onload = null;
+4194:             };
+4195:         });
+4196: }
+4197: 
+4198: function closeSketchEditor() {
+4199:     document.getElementById('sketches-list-container
+<truncated 2778 bytes>
+r, isBW);
+4255:                     else if (el.type === 'armchair') drawArmchair(tempCtx, el.w, el.h, el.color, isBW);
+4256:                     else if (el.type === 'corner') drawCorner(tempCtx, el.w, el.h, el.color, isBW);
+4257:                     else if (el.type === 'round-corner') drawRoundCorner(tempCtx, el.w, el.h, el.color, isBW);
+4258:                     else if (el.type === 'table') drawTable(tempCtx, el.w, el.h, el.color, isBW);
+4259:                     else if (el.type === 'text') drawText(tempCtx, el.label, el.color, isBW);
+4260:                     // NEW GEOMETRIC SHAPES
+4261:                     else if (el.type === 'square') drawRectangle(tempCtx, el.w, el.h, el.color, isBW, el.label, 0);
+4262:                     else if (el.type === 'rectangle') drawRectangle(tempCtx, el.w, el.h, el.color, isBW, el.label, 0);
+4263:                     else if (el.type === 'rounded-rect') drawRectangle(tempCtx, el.w, el.h, el.color, isBW, el.label, 8);
+4264:                     else if (el.type === 'top-rounded-rect') drawRectangle(tempCtx, el.w, el.h, el.color, isBW, el.label, { tl: 10, tr: 10, br: 0, bl: 0 });
+4265:                     else if (el.type === 'circle') drawEllipse(tempCtx, el.w, el.h, el.color, isBW, el.label);
+4266:                     else if (el.type === 'ellipse') drawEllipse(tempCtx, el.w, el.h, el.color, isBW, el.label);
+4267:                     else if (el.type === 'triangle') drawTriangle(tempCtx, el.w, el.h, el.color, isBW, el.label);
+4268:                     else if (el.type === 'hexagon') drawHexagon(tempCtx, el.w, el.h, el.color, isBW, el.label);
+4269:                     else if (el.type === 'star') drawStar(tempCtx, el.w, el.h, el.color, isBW, el.label);
+4270:                     else if (el.type === 'arrow-right') drawArrowRight(tempCtx, el.w, el.h, el.color, isBW, el.label);
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

@@ -1,0 +1,844 @@
+body {
+    font-family: 'Cairo', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f8fafc;
+}
+.text-amber-700 { color: #b45309; }
+.bg-amber-50 { background-color: #fffbeb; }
+.border-amber-500 { border-color: #f59e0b; }
+.bg-amber-500 { background-color: #f59e0b; }
+.hover:bg-amber-600:hover { background-color: #d97706; }
+
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+.sidebar {
+    transition: transform 0.3s ease-in-out;
+    z-index: 20;
+}
+.main-content {
+    transition: margin-right 0.3s ease-in-out;
+}
+.table-bordered th, .table-bordered td {
+    border: 1px solid #e2e8f0;
+}
+
+input[type="number"], input[type="text"], input[type="tel"], textarea {
+    direction: ltr;
+}
+
+.financial-number {
+     font-family: 'Inter', sans-serif;
+     font-feature-settings: "tnum"; /* أرقام مجدولة متناسقة الطول والمحاذاة العمودية */
+     direction: ltr;
+     display: inline-block;
+}
+
+.input-field {
+    border: 1px solid #9ca3af;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    padding: 0.75rem;
+    width: 100%;
+    margin-top: 0.25rem;
+}
+
+.input-field:focus {
+    border-color: #f59e0b;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.5);
+}
+
+.password-container {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #9ca3af;
+    z-index: 10;
+}
+
+#confirmation-modal {
+     background-color: rgba(0, 0, 0, 0.6);
+}
+.modal-content-custom {
+     transform: scale(0.95);
+     animation: scaleIn 0.2s ease-out forwards;
+}
+@keyframes scaleIn {
+    to { transform: scale(1); }
+}
+
+.electricity-bill {
+    border-right: 4px solid #ef4444;
+}
+
+/* Modern Confirmation Modal Styles */
+.confirmation-modal-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.confirmation-modal-content {
+    background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.confirmation-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 36px;
+}
+
+.confirmation-icon.verify {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: white;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+}
+
+.confirmation-icon.unverify {
+    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    color: white;
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+}
+
+.confirmation-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.confirmation-message {
+    color: #6b7280;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    font-size: 1rem;
+}
+
+.confirmation-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.confirm-btn {
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.confirm-btn.yes {
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    color: white;
+    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+}
+
+.confirm-btn.yes:hover {
+    background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+}
+
+.confirm-btn.no {
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+}
+
+.confirm-btn.no:hover {
+    background: #e5e7eb;
+    transform: translateY(-2px);
+}
+
+@media print {
+    /* إخفاء كل العناصر في الصفحة عدا حاوية التطبيق الرئيسي */
+    body > *:not(#main-app) {
+        display: none !important;
+    }
+    
+    /* إخفاء القائمة الجانبية وزر تبديل القائمة وأي عناصر أخرى محددة بعدم الطباعة */
+    #sidebar, #sidebar-toggle, .no-print {
+        display: none !important;
+    }
+    
+    /* إخفاء جميع الواجهات والنوافذ داخل محتوى التطبيق عدا نافذة الفاتورة والكروكي */
+    #main-content > *:not(#printable-invoice-modal):not(#printable-sketch-modal) {
+        display: none !important;
+    }
+    
+    /* إعادة ضبط الارتفاع والتمرير والـ flex للطباعة الصحيحة على الهواتف والأجهزة اللوحية */
+    html, body, #main-app, #main-content {
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background-color: white !important;
+    }
+    
+    /* جعل نوافذ الطباعة تأخذ كامل الصفحة وتظهر بشكل صحيح */
+    #printable-invoice-modal, #printable-sketch-modal {
+        display: block !important;
+        visibility: visible !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+        background-color: white !important;
+        z-index: 99999 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    #printable-invoice-modal .modal-content-custom, #printable-sketch-modal .modal-content-custom {
+        box-shadow: none !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background-color: white !important;
+        border: none !important;
+    }
+
+    #print-sketch-image {
+        max-height: 17.5cm !important;
+        width: auto !important;
+        display: block !important;
+        margin: 0 auto !important;
+        object-fit: contain !important;
+    }
+    
+    @page {
+        size: auto;
+        margin: 10mm;
+    }
+}
+
+/* ====================================================================
+   تحسينات واجهة الهاتف والتطبيق (Mobile App UI Optimizations)
+   ==================================================================== */
+
+/* منع تحديد النصوص بالخطأ أثناء النقر واللمس المتكرر */
+a, button, select, input, i, .confirmation-buttons {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+/* تحسين شكل المدخلات على الأيفون والأندرويد لتشبه التطبيقات الأصلية */
+.input-field {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: #ffffff;
+    font-size: 0.95rem;
+    padding: 0.7rem 0.9rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px; /* زوايا منحنية جميلة وعصرية */
+    transition: all 0.2s ease-in-out;
+}
+
+.input-field:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+/* شريط تمرير (Scrollbar) مخصص وأنيق للجداول على الهاتف لتسهيل قراءة البيانات */
+.table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* تحسين مظهر الجداول على شاشات الهواتف لتفادي حشر البيانات */
+@media (max-width: 768px) {
+    .table-responsive {
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    
+    .table-responsive table {
+        font-size: 0.85rem !important; /* حجم خط مناسب وواضح جداً للبيانات */
+    }
+    
+    .table-responsive th, .table-responsive td {
+        padding: 10px 12px !important; /* حشوة مريحة للعين */
+    }
+    
+    /* جعل العناوين الرئيسية مرنة وحجمها متناسق مع شاشات الهواتف */
+    h2 {
+        font-size: 1.5rem !important;
+        margin-bottom: 1.25rem !important;
+    }
+    
+    /* جعل أزرار الإضافة والتصفية تأخذ مساحات مناسبة وسهلة للنقر بالإصبع */
+    button, .btn {
+        min-height: 44px; /* المعيار القياسي لتطبيقات الهواتف لسهولة اللمس */
+    }
+    
+    /* تحسين البطاقات الإحصائية لتظهر بشكل متناسق ومريح للرؤية على الهاتف */
+    #dashboard-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important; /* بطاقتين في كل صف لتسهيل المقارنة وسرعة القراءة */
+        gap: 12px !important;
+    }
+    
+    /* جعل البطاقات الكبيرة تأخذ الحجم الكامل */
+    #dashboard-stats > div:last-child {
+        grid-column: span 2;
+    }
+
+    #dashboard-stats > div {
+        padding: 12px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px;
+    }
+    #dashboard-stats > div > div:last-child {
+        align-self: flex-end !important;
+    }
+    .text-2xl {
+        font-size: 1.25rem !important; /* حجم خط ممتاز للمبالغ الإحصائية على الهاتف */
+    }
+}
+
+/* بطاقات لوحة التحكم والجماليات العصرية */
+.view {
+    animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* تحسين مظهر القوائم والبطاقات الجانبية (Glassmorphism) للهواتف */
+#sidebar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* تحسين زر التبديل الجانبي على الهاتف ليكون مستقلاً ولا يغطي المحتوى */
+#sidebar-toggle {
+    border-radius: 50% !important; /* زر دائري عصري */
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 12px;
+    right: 12px;
+    transition: right 0.3s ease-in-out, background-color 0.15s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    padding: 0 !important;
+}
+@media (min-width: 768px) {
+    #sidebar-toggle {
+        right: 268px; /* Default expanded position on desktop/tablet */
+    }
+}
+#sidebar-toggle.collapsed {
+    right: 12px !important;
+}
+#sidebar-toggle.expanded {
+    right: 268px !important;
+}
+
+/* إضافة تباعد لكي لا يتم تغطية المحتوى بالزر الدائري الجديد وكذلك شريط التنقل السفلي */
+@media (max-width: 768px) {
+    .main-content {
+        padding-top: 60px !important;
+        padding-bottom: 80px !important; /* مساحة لعدم تغطية المحتوى بشريط التنقل السفلي */
+    }
+
+    /* ==========================================
+       تحويل الجداول إلى بطاقات عصرية فائقة التطور
+       ========================================== */
+    .table-responsive {
+        background: transparent !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+    }
+
+    .table-responsive table, 
+    .table-responsive thead, 
+    .table-responsive tbody, 
+    .table-responsive th, 
+    .table-responsive td, 
+    .table-responsive tr {
+        display: block;
+        width: 100% !important;
+    }
+    
+    .table-responsive thead {
+        display: none !important; /* إخفاء الهيدر التقليدي */
+    }
+
+    /* تصميم البطاقة الأساسي */
+    .table-responsive tbody tr {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 16px !important;
+        margin-bottom: 16px !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02) !important;
+        transition: all 0.2s ease-in-out !important;
+        position: relative;
+    }
+    
+    .table-responsive tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    /* 1. تصميم بطاقات الفواتير المخصص */
+    #invoices-table-body tr {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-gap: 8px !important;
+    }
+    #invoices-table-body td {
+        border: none !important;
+        padding: 0 !important;
+        white-space: normal !important;
+    }
+    #invoices-table-body td:nth-child(1) { /* رقم الفاتورة */
+        grid-column: 1;
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #1e293b;
+    }
+    #invoices-table-body td:nth-child(6) { /* الحالة */
+        grid-column: 2;
+        text-align: left;
+    }
+    #invoices-table-body td:nth-child(2) { /* اسم الزبون */
+        grid-column: 1 / span 2;
+        font-size: 0.95rem;
+        color: #475569;
+        font-weight: 700;
+        margin-top: 2px;
+    }
+    #invoices-table-body td:nth-child(3) { /* التاريخ */
+        grid-column: 1;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-top: 2px;
+    }
+    #invoices-table-body td:nth-child(7) { /* حالة المصادقة */
+        grid-column: 2;
+        text-align: left;
+        margin-top: 2px;
+    }
+    #invoices-table-body td:nth-child(4) { /* المجموع */
+        grid-column: 1;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 8px !important;
+        margin-top: 8px;
+    }
+    #invoices-table-body td:nth-child(4)::before {
+        content: "إجمالي المبلغ:";
+        font-size: 0.75rem;
+        color: #64748b;
+        display: block;
+        font-weight: normal;
+    }
+    #invoices-table-body td:nth-child(5) { /* الباقي */
+        grid-column: 2;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 8px !important;
+        margin-top: 8px;
+        text-align: left;
+    }
+    #invoices-table-body td:nth-child(5)::before {
+        content: "الباقي:";
+        font-size: 0.75rem;
+        color: #64748b;
+        display: block;
+        font-weight: normal;
+    }
+    #invoices-table-body td:nth-child(8) { /* الإجراءات */
+        grid-column: 1 / span 2;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 12px !important;
+        margin-top: 8px;
+        display: flex !important;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    /* 2. تصميم بطاقات الرواتب والعمال المخصص */
+    #workers-table-body tr {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-gap: 8px !important;
+    }
+    #workers-table-body td {
+        border: none !important;
+        padding: 0 !important;
+        white-space: normal !important;
+    }
+    #workers-table-body td:nth-child(1) { /* الاسم وحالة العامل */
+        grid-column: 1 / span 2;
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #1e293b;
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+    }
+    #workers-table-body td:nth-child(2) { /* الراتب الشهري */
+        grid-column: 1;
+        margin-top: 6px;
+    }
+    #workers-table-body td:nth-child(2)::before {
+        content: "الراتب الشهري:";
+        font-size: 0.75rem;
+        color: #64748b;
+        display: block;
+    }
+    #workers-table-body td:nth-child(3) { /* إجمالي المدفوع */
+        grid-column: 2;
+        text-align: left;
+        margin-top: 6px;
+    }
+    #workers-table-body td:nth-child(3)::before {
+        content: "إجمالي المدفوع:";
+        font-size: 0.75rem;
+        color: #64748b;
+        display: block;
+    }
+    #workers-table-body td:nth-child(4) { /* الباقي/الدين */
+        grid-column: 1 / span 2;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 8px !important;
+        margin-top: 8px;
+        font-weight: bold;
+    }
+    #workers-table-body td:nth-child(4)::before {
+        content: "الدين المتبقي (لهذا الشهر): ";
+        font-size: 0.75rem;
+        color: #64748b;
+        font-weight: normal;
+    }
+    #workers-table-body td:nth-child(5) { /* الإجراءات */
+        grid-column: 1 / span 2;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 12px !important;
+        margin-top: 8px;
+        display: flex !important;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    /* 3. تصميم بطاقات النقل المخصص */
+    #transport-table-body tr {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-gap: 8px !important;
+    }
+    #transport-table-body td {
+        border: none !important;
+        padding: 0 !important;
+        white-space: normal !important;
+    }
+    #transport-table-body td:nth-child(2) { /* اسم السائق */
+        grid-column: 1;
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #1e293b;
+    }
+    #transport-table-body td:nth-child(1) { /* التاريخ */
+        grid-column: 2;
+        text-align: left;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+    #transport-table-body td:nth-child(3) { /* المبلغ المدفوع */
+        grid-column: 1 / span 2;
+        font-size: 0.95rem;
+        margin-top: 4px;
+        background: #fffbeb;
+        padding: 6px 12px !important;
+        border-radius: 8px;
+        display: flex !important;
+        justify-content: space-between;
+    }
+    #transport-table-body td:nth-child(3)::before {
+        content: "المبلغ المدفوع:";
+        font-weight: bold;
+        color: #b45309;
+    }
+    #transport-table-body td:nth-child(4) { /* الملاحظات */
+        grid-column: 1 / span 2;
+        margin-top: 4px;
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+    #transport-table-body td:nth-child(4)::before {
+        content: "ملاحظات: ";
+        font-weight: bold;
+    }
+    #transport-table-body td:nth-child(5) { /* الإجراءات */
+        grid-column: 1 / span 2;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 12px !important;
+        margin-top: 8px;
+        display: flex !important;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    /* 4. تصميم بطاقات عمال خارجيين المخصص */
+    #external-workers-table-body tr {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-gap: 8px !important;
+    }
+    #external-workers-table-body td {
+        border: none !important;
+        padding: 0 !important;
+        white-space: normal !important;
+    }
+    #external-workers-table-body td:nth-child(2) { /* اسم العامل */
+        grid-column: 1;
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #1e293b;
+    }
+    #external-workers-table-body td:nth-child(1) { /* التاريخ */
+        grid-column: 2;
+        text-align: left;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+    #external-workers-table-body td:nth-child(3) { /* المبلغ */
+        grid-column: 1 / span 2;
+        font-size: 0.95rem;
+        margin-top: 4px;
+        background: #fef2f2;
+        padding: 6px 12px !important;
+        border-radius: 8px;
+        display: flex !important;
+        justify-content: space-between;
+    }
+    #external-workers-table-body td:nth-child(3)::before {
+        content: "المبلغ المدفوع:";
+        font-weight: bold;
+        color: #991b1b;
+    }
+    #external-workers-table-body td:nth-child(4) { /* الملاحظات */
+        grid-column: 1 / span 2;
+        margin-top: 4px;
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+    #external-workers-table-body td:nth-child(4)::before {
+        content: "ملاحظات: ";
+        font-weight: bold;
+    }
+    #external-workers-table-body td:nth-child(5) { /* الإجراءات */
+        grid-column: 1 / span 2;
+        border-top: 1px solid #f1f5f9 !important;
+        padding-top: 12px !important;
+        margin-top: 8px;
+        display: flex !important;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    /* 5. التصميم العام والاحتياطي لكافة الجداول الأخرى (المحلات، الكهرباء، المستخدمين) */
+    .table-responsive tbody tr:not(#invoices-table-body tr):not(#workers-table-body tr):not(#external-workers-table-body tr):not(#transport-table-body tr) {
+        display: block !important;
+    }
+    .table-responsive tbody tr:not(#invoices-table-body tr):not(#workers-table-body tr):not(#external-workers-table-body tr):not(#transport-table-body tr) td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        border: none !important;
+        padding: 8px 0 !important;
+        border-bottom: 1px dashed #f1f5f9 !important;
+        width: 100% !important;
+        white-space: normal !important;
+    }
+    .table-responsive tbody tr:not(#invoices-table-body tr):not(#workers-table-body tr):not(#external-workers-table-body tr):not(#transport-table-body tr) td:last-child {
+        border-bottom: none !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+        padding-top: 12px !important;
+    }
+
+    /* إضافة تصنيفات تلقائية للجداول الاحتياطية */
+    /* جدول المحلات */
+    #shops-table-body td:nth-child(1)::before { content: "المحل:"; font-weight: bold; color: #64748b; }
+    #shops-table-body td:nth-child(2)::before { content: "الإيجار الشهري:"; font-weight: bold; color: #64748b; }
+    #shops-table-body td:nth-child(3)::before { content: "الدين الحالي:"; font-weight: bold; color: #64748b; }
+    #shops-table-body td:nth-child(4)::before { content: "الإجراءات:"; font-weight: bold; color: #64748b; }
+
+    /* جدول المستخدمين */
+    #users-table-body td:nth-child(1)::before { content: "اسم المستخدم:"; font-weight: bold; color: #64748b; }
+    #users-table-body td:nth-child(2)::before { content: "البريد الإلكتروني:"; font-weight: bold; color: #64748b; }
+    #users-table-body td:nth-child(3)::before { content: "الصلاحية:"; font-weight: bold; color: #64748b; }
+    #users-table-body td:nth-child(4)::before { content: "الإجراءات:"; font-weight: bold; color: #64748b; }
+
+    /* جدول الكهرباء */
+    #electricity-table-body td:nth-child(1)::before { content: "المدة الزمنية:"; font-weight: bold; color: #64748b; }
+    #electricity-table-body td:nth-child(2)::before { content: "المكان:"; font-weight: bold; color: #64748b; }
+    #electricity-table-body td:nth-child(3)::before { content: "المبلغ:"; font-weight: bold; color: #64748b; }
+    #electricity-table-body td:nth-child(4)::before { content: "تاريخ الأداء:"; font-weight: bold; color: #64748b; }
+    #electricity-table-body td:nth-child(5)::before { content: "رقم الفاتورة:"; font-weight: bold; color: #64748b; }
+    #electricity-table-body td:nth-child(6)::before { content: "ملاحظات:"; font-weight: bold; color: #64748b; }
+    #electricity-table-body td:nth-child(7)::before { content: "الإجراءات:"; font-weight: bold; color: #64748b; }
+
+    /* تحسين شكل الأزرار داخل الجداول على الهاتف لتكون واضحة وجذابة وسهلة اللمس */
+    .table-responsive button, 
+    .table-responsive a {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        padding: 6px 14px !important;
+        border-radius: 10px !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        color: #334155;
+    }
+    
+    .table-responsive button.text-blue-600 { color: #2563eb; border-color: #bfdbfe; background: #eff6ff; }
+    .table-responsive button.text-red-600 { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+    .table-responsive button.text-amber-600 { color: #d97706; border-color: #fde68a; background: #fffbeb; }
+    .table-responsive button.text-purple-600 { color: #7c3aed; border-color: #ddd6fe; background: #f5f3ff; }
+    .table-responsive button.text-green-600 { color: #16a34a; border-color: #bbf7d0; background: #f0fdf4; }
+    .table-responsive button.text-indigo-600 { color: #4f46e5; border-color: #c7d2fe; background: #e0e7ff; }
+
+    /* حماية من تداخل الأزرار الطويلة */
+    .table-responsive td button:disabled {
+        background: #f1f5f9 !important;
+        color: #94a3b8 !important;
+        border-color: #e2e8f0 !important;
+    }
+}
+
+/* تحويل استمارات الإضافة والتعديل إلى نوافذ منبثقة عصرية */
+#invoice-form, 
+#worker-form, 
+#transport-form, 
+#shop-form, 
+#electricity-form, 
+#external-worker-form, 
+#user-form {
+    position: fixed !important;
+    inset: 0 !important;
+    background-color: rgba(17, 24, 39, 0.7) !important; /* خلفية داكنة شفافة */
+    backdrop-filter: blur(6px) !important; /* تأثير التمويه الزجاجي العالي الفخامة */
+    z-index: 90 !important; /* فوق كل العناصر والجدول */
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    margin: 0 !important;
+    overflow-y: auto;
+}
+
+/* تفعيل وضع flex عند إزالة كلاس hidden */
+#invoice-form:not(.hidden), 
+#worker-form:not(.hidden), 
+#transport-form:not(.hidden), 
+#shop-form:not(.hidden), 
+#electricity-form:not(.hidden), 
+#external-worker-form:not(.hidden), 
+#user-form:not(.hidden) {
+    display: flex !important;
+}
+
+/* ====================================================================
+   أنماط لوحة رسم الكروكي (Sketch Editor Custom Styles)
+   ==================================================================== */
+#canvas-scroll-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+#canvas-scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+#canvas-scroll-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+#canvas-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+.sketch-color-active {
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4);
+    transform: scale(1.1);
+}
+@media (max-width: 1024px) {
+    #sketch-editor-container {
+        padding: 1rem !important;
+    }
+    #canvas-scroll-container {
+        max-width: 100%;
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+}
+
+#sketch-canvas {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}

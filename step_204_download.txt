@@ -1,0 +1,48 @@
+Created At: 2026-06-10T18:24:01Z
+Completed At: 2026-06-10T18:24:01Z
+File Path: `file:///c:/Users/hp/Desktop/Meuble%20Art%20Design/index.html`
+Total Lines: 1282
+Total Bytes: 110741
+Showing lines 395 to 435
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+395:                         <!-- Right Panel: Canvas Area -->
+396:                         <div class="flex-1 bg-gray-100 p-4 rounded-xl border border-gray-300 flex flex-col items-center justify-center relative overflow-hidden" style="min-height: 500px;">
+397:                             <!-- Canvas Wrapper for scroll/zoom if necessary -->
+398:                             <div class="w-full overflow-auto flex justify-center py-2" id="canvas-scroll-container">
+399:                                 <div class="relative bg-white border border-gray-400 rounded shadow-md" style="width: 800px; height: 1100px;">
+400:                                     <canvas id="sketch-canvas" width="800" height="1100" class="absolute top-0 left-0 bg-transparent cursor-crosshair"></canvas>
+401:                                 </div>
+402:                             </div>
+403:                             
+404:                             <!-- Context element control bar -->
+405:                             <div id="sketch-element-controls" class="hidden mt-3 flex items-center gap-3 bg-white p-2 rounded-xl border shadow-sm">
+406:                                 <span class="text-xs text-gray-500">العنصر المحدد:</span>
+407:                                 <button type="button" onclick="rotateSelectedSketchElement()" class="text-blue-600 hover:text-blue-800 text-xs font-bold px-2 py-1 bg-blue-50 rounded" title="تدوير بـ 15 درجة"><i class="fas fa-redo ml-1"></i> تدوير</button>
+408:                                 <button type="button" onclick="duplicateSelecte
+<truncated 632 bytes>
+t" id="sketch-element-text-input" oninput="updateSelectedSketchElementText(this.value)" class="p-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-amber-500 text-right w-32" placeholder="تغيير القياس/النص">
+412:                                 </div>
+413:                             </div>
+414:                         </div>
+415:                     </div>
+416: 
+417:                     <!-- Editor Action Buttons -->
+418:                     <div class="flex justify-end gap-4 border-t pt-4">
+419:                         <button type="button" onclick="saveSketchDesign()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition duration-150 flex items-center gap-2">
+420:                             <i class="fas fa-save"></i>
+421:                             <span>حفظ التصميم</span>
+422:                         </button>
+423:                         <button type="button" onclick="downloadSketchPDF()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition duration-150 flex items-center gap-2">
+424:                             <i class="fas fa-print"></i>
+425:                             <span>طباعة الكروكي</span>
+426:                         </button>
+427:                         <button type="button" onclick="closeSketchEditor()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2.5 px-6 rounded-xl transition duration-150">
+428:                             <span>إلغاء والعودة</span>
+429:                         </button>
+430:                     </div>
+431:                 </div>
+432:             </div>
+433: 
+434:             <!-- Users View (Admin Only) -->
+435:             <div id="users-view" class="view hidden">
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
