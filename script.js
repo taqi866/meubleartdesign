@@ -13,26 +13,6 @@ let operationInProgress = false;
 let currentUserRole = 'admin';
 let dashboardStats = null;
 
-// متغيرات كروكي الرسم
-let sketches = [];
-let currentSketchId = null;
-let sketchElements = [];
-let selectedSketchElement = null;
-let currentSketchTool = 'select';
-let currentSketchColor = '#000000';
-let showSketchGrid = true;
-let isSketchBW = false;
-let sketchBgImage = null;
-let sketchBgImageSrcData = null; 
-let sketchBgImageOpacity = 0.5;
-let isSketchDrawing = false;
-let sketchStartPoint = null;
-let sketchDrawingPoints = [];
-let sketchDragOffset = {x: 0, y: 0};
-let sketchResizeStartSize = {w: 0, h: 0};
-let sketchRotateStartAngle = 0;
-let sketchActionMode = null;
-
 // --- LOCAL STORAGE HELPERS ---
 const StorageKeys = {
     INVOICES: 'meubel_invoices',
@@ -44,8 +24,7 @@ const StorageKeys = {
     STATS: 'meubel_stats',
     USERS: 'meubel_users',
     ALL_PAYMENTS: 'meubel_payments',
-    USER: 'meubel_user_session', // مفتاح تخزين بيانات المستخدم الحالي
-    SKETCHES: 'meubel_sketches'
+    USER: 'meubel_user_session' // مفتاح تخزين بيانات المستخدم الحالي
 };
 
 function saveToLocal(key, data) {
@@ -60,7 +39,7 @@ function getFromLocal(key) {
 async function syncAllDataFromServer() {
     return new Promise((resolve) => {
         let syncCount = 0;
-        const totalSyncs = 10; // أضفنا جلب الكروكي
+        const totalSyncs = 9; // أضفنا جلب كل الدفعات والمستخدمين
         const checkDone = () => {
             syncCount++;
             if (syncCount === totalSyncs) resolve();
@@ -79,7 +58,6 @@ async function syncAllDataFromServer() {
         scriptRunHelper('getDashboardData', [], (data) => { dashboardStats = data; saveToLocal(StorageKeys.STATS, data); checkDone(); });
         scriptRunHelper('getAllPayments', [], (data) => { allPayments = data; saveToLocal(StorageKeys.ALL_PAYMENTS, data); checkDone(); });
         scriptRunHelper('getUsers', [], (data) => { allUsers = data; saveToLocal(StorageKeys.USERS, data); checkDone(); });
-        scriptRunHelper('getSketches', [], (data) => { sketches = data || []; saveToLocal(StorageKeys.SKETCHES, data || []); checkDone(); });
     });
 }
 
@@ -93,7 +71,6 @@ function loadFromLocal() {
     allExternalWorkers = getFromLocal(StorageKeys.EXTERNAL) || [];
     allUsers = getFromLocal(StorageKeys.USERS) || [];
     dashboardStats = getFromLocal(StorageKeys.STATS) || null;
-    sketches = getFromLocal(StorageKeys.SKETCHES) || [];
 }
 
 // --- LOCAL SYNC HELPERS ---
@@ -437,10 +414,13 @@ async function unverifyInvoice(invoiceNo) {
         </button>`
     }
     
-    <button onclick="sendWhatsAppInvoice('${inv.InvoiceNo}')" 
-            class="text-green-600 hover:text-green-900 transition duration-150" title="إرسال الفاتورة عبر الواتساب">
-        واتساب
-    </button>
+    ${parseFloat(inv.RemainingAmount) > 0 ? 
+        `<button onclick="sendWhatsAppReminder('${inv.InvoiceNo}', '${inv.CustomerName}', '${inv.CustomerPhone}', ${inv.RemainingAmount})" 
+                class="text-green-600 hover:text-green-900 transition duration-150">
+            واتساب
+        </button>` : 
+        ''
+    }
     
     <!-- NEW: التعديل متاح دائماً -->
     <button onclick="editInvoiceForm('${inv.InvoiceNo}')" 
@@ -625,16 +605,8 @@ async function unverifyInvoice(invoiceNo) {
                 document.getElementById('main-app').classList.remove('hidden');
                 showView(currentUserRole === 'admin' ? 'dashboard' : 'invoices');
                 renderAllLocalViews();
-                
-                // مزامنة البيانات تلقائياً في الخلفية لضمان حداثة البيانات عند استئناف الجلسة
-                syncAllDataFromServer().then(() => {
-                    renderAllLocalViews();
-                });
-            }
-            
-            // تهيئة محرر الكروكي التفاعلي
-            if (typeof initSketchCanvas === 'function') {
-                initSketchCanvas();
+            } else {
+                document.getElementById('login-view').classList.remove('hidden');
             }
 
             // تسجيل Service Worker لتمكين ميزات PWA والتثبيت كتطبيق
@@ -806,9 +778,6 @@ async function unverifyInvoice(invoiceNo) {
             renderDashboardUI();
             fetchInvoices(); // Les fonctions de fetch vont maintenant filtrer localement
             fetchWorkers();
-            if (typeof fetchSketches === 'function') {
-                fetchSketches();
-            }
         }
         
         function openModal(modalId) {
@@ -821,7 +790,7 @@ async function unverifyInvoice(invoiceNo) {
         }
 
         function showView(viewId) {
-             if (currentUserRole !== 'admin' && viewId !== 'invoices' && viewId !== 'sketches') {
+             if (currentUserRole !== 'admin' && viewId !== 'invoices') {
                  viewId = 'invoices';
              }
              
@@ -838,7 +807,6 @@ async function unverifyInvoice(invoiceNo) {
              if (currentView === 'external-workers') fetchExternalWorkers();
              if (currentView === 'users') fetchUsers();
              if (currentView === 'profit-loss') fetchProfitLossData();
-             if (currentView === 'sketches') fetchSketches();
 
              // تحديث حالة التبويب النشط في القائمة الجانبية
              document.querySelectorAll('[id^="nav-"]').forEach(link => {
@@ -861,55 +829,9 @@ async function unverifyInvoice(invoiceNo) {
                  activeMobileLink.classList.remove('text-gray-500');
                  activeMobileLink.classList.add('text-amber-500', 'scale-105');
              }
-             if (window.innerWidth < 768) {
-                 closeSidebar();
-             }
+
+             closeSidebar();
         }
-
-        function toggleSidebar() {
-             const sidebar = document.getElementById('sidebar');
-             if (sidebar) {
-                 if (!(window.innerWidth < 768 ? sidebar.classList.contains('translate-x-0') : !sidebar.classList.contains('md:translate-x-full'))) {
-                     openSidebar();
-                 } else {
-                     closeSidebar();
-                 }
-             }
-         }
-
-         function openSidebar() {
-             const sidebar = document.getElementById('sidebar');
-             const mainContent = document.getElementById('main-content');
-             if (sidebar) {
-                 sidebar.classList.remove('translate-x-full', 'md:translate-x-full');
-                 sidebar.classList.add('translate-x-0', 'md:translate-x-0');
-             }
-             if (mainContent) {
-                  mainContent.classList.add('md:mr-64');
-                  const toggleBtn = document.getElementById('sidebar-toggle');
-                  if (toggleBtn) {
-                      toggleBtn.classList.remove('right-0', 'md:right-0');
-                      toggleBtn.classList.add('right-64', 'md:right-64');
-                  }
-             }
-         }
-
-         function closeSidebar() {
-             const sidebar = document.getElementById('sidebar');
-             const mainContent = document.getElementById('main-content');
-             if (sidebar) {
-                 sidebar.classList.remove('translate-x-0', 'md:translate-x-0');
-                 sidebar.classList.add('translate-x-full', 'md:translate-x-full');
-             }
-             if (mainContent) {
-                  mainContent.classList.remove('md:mr-64');
-                  const toggleBtn = document.getElementById('sidebar-toggle');
-                  if (toggleBtn) {
-                      toggleBtn.classList.remove('right-64', 'md:right-64');
-                      toggleBtn.classList.add('right-0', 'md:right-0');
-                  }
-             }
-         }
 
         function showForm(formType) {
             if (formType === 'invoice-form-new') {
@@ -1127,17 +1049,7 @@ async function unverifyInvoice(invoiceNo) {
                  return matchesQuery && matchesYear && matchesMonth && matchesStatus;
              });
 
-              renderInvoicesTable(filtered);
-              
-              // Background sync
-              const filters = { query, year, month, status };
-              /*
-              scriptRunHelper('getInvoices', [filters], (data) => {
-                  allInvoices = data;
-                  saveToLocal(StorageKeys.INVOICES, data);
-                  renderInvoicesTable(data);
-              });
-              */
+             renderInvoicesTable(filtered);
              
              // حساب الإحصائيات محلياً لضمان السرعة
              const summary = {
@@ -1147,11 +1059,26 @@ async function unverifyInvoice(invoiceNo) {
                  totalProfit: filtered.reduce((s, i) => s + ((parseFloat(i.TotalAmount) || 0) - (parseFloat(i.Cost) || 0)), 0)
              };
              renderInvoiceSummaryStats(summary);
+
+             // مزامنة صامتة في الخلفية إذا لزم الأمر، دون تعطيل المستخدم
+             // scriptRunHelper('getInvoices', [filters], (data) => { ... });
+             
+             /*
+             // Background sync
+             const filters = { query, year, month, status };
+             scriptRunHelper('getInvoices', [filters], (data) => {
+                 allInvoices = data;
+                 saveToLocal(StorageKeys.INVOICES, data);
+                 // No need to re-render unless data changed significantly, but we can to be safe
+                 renderInvoicesTable(data);
+             });
+             
              scriptRunHelper('getInvoiceSummaryByDate', [filters], (summary) => {
-                  if (summary.success) {
-                      renderInvoiceSummaryStats(summary);
-                  }
-              });
+                 if (summary.success) {
+                     renderInvoiceSummaryStats(summary);
+                 }
+             });
+             */
         }
         
         function renderInvoiceSummaryStats(summary) {
@@ -1180,7 +1107,7 @@ async function unverifyInvoice(invoiceNo) {
              document.getElementById('InvoiceID_Hidden').value = invoiceData.InvoiceNo; 
              
              document.getElementById('InvoiceNo').value = invoiceData.InvoiceNo;
-             document.getElementById('InvoiceNo').setAttribute('readonly', 'true');
+             document.getElementById('InvoiceNo').setAttribute('readonly', 'true'); 
              document.getElementById('CustomerName').value = invoiceData.CustomerName;
              document.getElementById('CustomerPhone').value = invoiceData.CustomerPhone;
              document.getElementById('Date').value = invoiceData.Date;
@@ -1307,94 +1234,6 @@ async function unverifyInvoice(invoiceNo) {
             });
         }
         
-        function openExternalLink(url) {
-            const link = document.createElement('a');
-            link.href = url;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function cleanPhoneNumber(phone) {
-            let cleanPhone = String(phone).replace(/\D/g, '');
-            if (cleanPhone.startsWith('00')) {
-                cleanPhone = cleanPhone.substring(2);
-            }
-            if (cleanPhone.startsWith('0')) {
-                cleanPhone = '212' + cleanPhone.substring(1);
-            }
-            if (cleanPhone.startsWith('2120')) {
-                cleanPhone = '212' + cleanPhone.substring(4);
-            }
-            if (!cleanPhone.startsWith('212')) {
-                cleanPhone = '212' + cleanPhone;
-            }
-            return cleanPhone;
-        }
-
-        function sendWhatsAppReminder(invoiceNo, customerName, customerPhone, remainingAmount) {
-            if (!customerPhone) {
-                showAlert('لا يوجد رقم هاتف للزبون.', 'error');
-                return;
-            }
-            
-            const cleanPhone = cleanPhoneNumber(customerPhone);
-            const formattedRemaining = Math.round(parseFloat(remainingAmount) || 0).toLocaleString('en-US').replace(/,/g, ' ');
-
-            const message = 
-`*MEUBLE ART DESIGN* 🛋️
-مرحباً ${customerName} 👋
-نذكّركم بوجود مبلغ متبقي على فاتورتكم رقم #${invoiceNo} 💳
-*المبلغ المتبقي:* ${formattedRemaining} DH
-شكراً لتعاونكم 🤝`;
-
-            const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-            openExternalLink(waLink);
-            showAlert('تم تجهيز رسالة التذكير عبر الواتساب.', 'success');
-        }
-        
-        function sendWhatsAppInvoice(invoiceNo) {
-            const invoice = allInvoices.find(inv => String(inv.InvoiceNo).trim() === String(invoiceNo).trim());
-            if (!invoice) {
-                showAlert('لم يتم العثور على الفاتورة.', 'error');
-                return;
-            }
-            
-            const phone = invoice.CustomerPhone;
-            if (!phone) {
-                showAlert('رقم هاتف الزبون غير مسجل في هذه الفاتورة.', 'error');
-                return;
-            }
-            
-            const cleanPhone = cleanPhoneNumber(phone);
-            const payments = getLocalInvoicePayments(invoiceNo);
-            const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.PaidAmount || 0), 0);
-            const remaining = (parseFloat(invoice.TotalAmount) - totalPaid).toFixed(2);
-            
-            const message = 
-`*MEUBLE ART DESIGN* 🛋️
-*تفاصيل الفاتورة رقم: #${invoice.InvoiceNo}*
-
-*الزبون:* ${invoice.CustomerName}
-*الهاتف:* ${invoice.CustomerPhone}
-*التاريخ:* ${formatDateDMY(invoice.Date)}
-*الوصف:* ${invoice.ItemDescription || 'أثاث مخصص'}
-
------------------------------------
-*المجموع الكلي:* ${parseFloat(invoice.TotalAmount).toFixed(2)} DH
-*المبلغ المؤدى:* ${totalPaid.toFixed(2)} DH
-*المبلغ المتبقي:* ${remaining} DH
------------------------------------
-
-شكراً لثقتكم بنا. يسعدنا دائماً خدمتكم. 🤝`;
-            
-            const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-            openExternalLink(waLink);
-            showAlert('تم تجهيز وإرسال الفاتورة عبر الواتساب.', 'success');
-        }
-        
         async function addInvoicePaymentSubmit(data) {
             // 1. تحديث الفاتورة محلياً (Optimistic Update)
             const invIndex = allInvoices.findIndex(i => String(i.InvoiceNo).trim() === String(data.InvoiceNo).trim());
@@ -1462,52 +1301,6 @@ async function unverifyInvoice(invoiceNo) {
                       showAlert('تم تجهيز رسالة الواتساب.', 'success');
                  }
              });
-        }
-        
-        function sendWhatsAppInvoice(invoiceNo) {
-            const invoice = allInvoices.find(inv => String(inv.InvoiceNo).trim() === String(invoiceNo).trim());
-            if (!invoice) {
-                showAlert('لم يتم العثور على الفاتورة.', 'error');
-                return;
-            }
-            
-            const phone = invoice.CustomerPhone;
-            if (!phone) {
-                showAlert('رقم هاتف الزبون غير مسجل في هذه الفاتورة.', 'error');
-                return;
-            }
-            
-            let cleanPhone = String(phone).replace(/\D/g, '');
-            if (!cleanPhone.startsWith('212') && !cleanPhone.startsWith('0')) {
-                cleanPhone = '212' + cleanPhone;
-            } else if (cleanPhone.startsWith('0')) {
-                cleanPhone = '212' + cleanPhone.substring(1);
-            }
-            
-            const payments = getLocalInvoicePayments(invoiceNo);
-            const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.PaidAmount || 0), 0);
-            const remaining = (parseFloat(invoice.TotalAmount) - totalPaid).toFixed(2);
-            
-            const message = 
-`*MEUBLE ART DESIGN* 🛋️
-*تفاصيل الفاتورة رقم: #${invoice.InvoiceNo}*
-
-*الزبون:* ${invoice.CustomerName}
-*الهاتف:* ${invoice.CustomerPhone}
-*التاريخ:* ${formatDateDMY(invoice.Date)}
-*الوصف:* ${invoice.ItemDescription || 'أثاث مخصص'}
-
------------------------------------
-*المجموع الكلي:* ${parseFloat(invoice.TotalAmount).toFixed(2)} DH
-*المبلغ المؤدى:* ${totalPaid.toFixed(2)} DH
-*المبلغ المتبقي:* ${remaining} DH
------------------------------------
-
-شكراً لثقتكم بنا. يسعدنا دائماً خدمتكم. 🤝`;
-            
-            const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-            window.open(waLink, '_blank');
-            showAlert('تم تجهيز وإرسال الفاتورة عبر الواتساب.', 'success');
         }
         
         function viewInvoicePayments(invoiceNo) {
@@ -2975,1467 +2768,101 @@ async function unverifyInvoice(invoiceNo) {
         function handlePaymentSubmit(event) {
             event.preventDefault();
             
-            const type = document.getElementById('payment-type').value;
-            const targetId = document.getElementById('target-id').value;
-            const targetName = document.getElementById('target-name').value;
-            const paidAmount = document.getElementById('PaidAmount').value;
-            const paymentDate = document.getElementById('PaymentDate').value;
-            const paymentNotes = document.getElementById('PaymentNotes').value;
-            
-            const data = {
-                targetId: targetId,
-                targetName: targetName,
-                PaidAmount: paidAmount,
-                PaymentDate: paymentDate,
-                PaymentNotes: paymentNotes,
-                InvoiceNo: targetId
-            };
-            
-            if (type === 'invoice') {
-                addInvoicePaymentSubmit(data);
-            } else if (type === 'worker') {
-                addWorkerPaymentSubmit(data);
-            } else if (type === 'shop') {
-                addShopPaymentSubmit(data);
+            if (operationInProgress) {
+                showAlert('جاري معالجة العملية السابقة...', 'info');
+                return;
             }
-        }
-        
-
-
-function hexToRgba(hex, alpha) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-// رسم الصوفا
-function drawSofa(ctx, w, h, color, isBW) {
-    ctx.strokeStyle = isBW ? '#000000' : color;
-    ctx.fillStyle = isBW ? 'rgba(255,255,255,0.85)' : hexToRgba(color, 0.15);
-    ctx.lineWidth = 2.5;
-
-    ctx.beginPath();
-    roundRect(ctx, -w / 2, -h / 2, w, h, 8);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = isBW ? 'rgba(230,230,230,0.8)' : hexToRgba(color, 0.25);
-    ctx.beginPath();
-    roundRect(ctx, -w / 2 + 2, -h / 2 + 2, w - 4, h * 0.25, 4);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.beginPath();
-    roundRect(ctx, -w / 2 + 2, -h / 2 + h * 0.25 + 2, w * 0.1, h * 0.7 - 4, 4);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.beginPath();
-    roundRect(ctx, w / 2 - w * 0.1 - 2, -h / 2 + h * 0.25 + 2, w * 0.1, h * 0.7 - 4, 4);
-    ctx.fill();
-    ctx.stroke();
-    
-    const seats = w > 80 ? 3 : 2;
-    const seatW = (w * 0.8) / seats;
-    ctx.fillStyle = 'transparent';
-    for (let i = 0; i < seats; i++) {
-        ctx.beginPath();
-        roundRect(ctx, -w / 2 + w * 0.1 + i * seatW, -h / 2 + h * 0.25 + 4, seatW, h * 0.75 - 8, 2);
-        ctx.stroke();
-    }
-}
-
-// رسم الفوتي
-function drawArmchair(ctx, w, h, color, isBW) {
-    ctx.strokeStyle = isBW ? '#000000' : color;
-    ctx.fillStyle = isBW ? 'rgba(255,255,255,0.85)' : hexToRgba(color, 0.15);
-    ctx.lineWidth = 2.5;
-
-    ctx.beginPath();
-    roundRect(ctx, -w / 2, -h / 2, w, h, 12);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = isBW ? 'rgba(230,230,230,0.8)' : hexToRgba(color, 0.25);
-    ctx.beginPath();
-    roundRect(ctx, -w / 2 + 3, -h / 2 + 3, w - 6, h * 0.25, 6);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.beginPath();
-    roundRect(ctx, -w / 2 + 3, -h / 2 + h * 0.25 + 3, w * 0.15, h * 0.75 - 6, 6);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.beginPath();
-    roundRect(ctx, w / 2 - w * 0.15 - 3, -h / 2 + h * 0.25 + 3, w * 0.15, h * 0.75 - 6, 6);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.beginPath();
-    roundRect(ctx, -w / 2 + w * 0.15 + 3, -h / 2 + h * 0.25 + 5, w * 0.7 - 6, h * 0.75 - 10, 4);
-    ctx.stroke();
-}
-
-// رسم الزاوية
-function drawCorner(ctx, w, h, color, isBW) {
-    ctx.strokeStyle = isBW ? '#000000' : color;
-    ctx.fillStyle = isBW ? 'rgba(255,255,255,0.85)' : hexToRgba(color, 0.15);
-    ctx.lineWidth = 2.5;
-
-    ctx.beginPath();
-    ctx.moveTo(-w / 2, -h / 2);
-    ctx.lineTo(w / 2, -h / 2);
-    ctx.lineTo(w / 2, h / 2);
-    ctx.lineTo(w / 2 - w * 0.35, h / 2);
-    ctx.lineTo(w / 2 - w * 0.35, -h / 2 + h * 0.35);
-    ctx.lineTo(-w / 2, -h / 2 + h * 0.35);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = isBW ? 'rgba(230,230,230,0.8)' : hexToRgba(color, 0.25);
-    ctx.beginPath();
-    ctx.moveTo(-w / 2 + 3, -h / 2 + 3);
-    ctx.lineTo(w / 2 - 3, -h / 2 + 3);
-    ctx.lineTo(w / 2 - 3, h / 2 - 3);
-    ctx.lineTo(w / 2 - w * 0.15 - 3, h / 2 - 3);
-    ctx.lineTo(w / 2 - w * 0.15 - 3, -h / 2 + h * 0.15 + 3);
-    ctx.lineTo(-w / 2 + 3, -h / 2 + h * 0.15 + 3);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-}
-
-// رسم زاوية دائرية
-function drawRoundCorner(ctx, w, h, color, isBW) {
-    ctx.strokeStyle = isBW ? '#000000' : color;
-    ctx.fillStyle = isBW ? 'rgba(255,255,255,0.85)' : hexToRgba(color, 0.15);
-    ctx.lineWidth = 2.5;
-
-    ctx.beginPath();
-    ctx.moveTo(-w / 2, -h / 2);
-    ctx.lineTo(w / 2, -h / 2);
-    ctx.arc(w / 2, -h / 2, w, Math.PI, Math.PI / 2, true);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = isBW ? 'rgba(230,230,230,0.8)' : hexToRgba(color, 0.25);
-    ctx.beginPath();
-    ctx.moveTo(w / 2 - w * 0.15, -h / 2 + h * 0.15);
-    ctx.arc(w / 2, -h / 2, w - w * 0.15, Math.PI, Math.PI / 2, true);
-    ctx.stroke();
-}
-
-// رسم الطاولة
-function drawTable(ctx, w, h, color, isBW) {
-    ctx.strokeStyle = isBW ? '#555555' : color;
-    ctx.fillStyle = isBW ? 'rgba(250,250,250,0.9)' : hexToRgba(color, 0.05);
-    ctx.lineWidth = 1.5;
-
-    ctx.beginPath();
-    roundRect(ctx, -w / 2, -h / 2, w, h, 6);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.setLineDash([4, 2]);
-    ctx.beginPath();
-    roundRect(ctx, -w / 2 + 4, -h / 2 + 4, w - 8, h - 8, 4);
-    ctx.stroke();
-    ctx.setLineDash([]);
-}
-
-// رسم القياس (خط مستقيم بدون أسهم مع شخطات طرفية متعامدة)
-function drawDimensionLine(ctx, x1, y1, x2, y2, color, label, isBW) {
-    ctx.strokeStyle = isBW ? '#000000' : color;
-    ctx.fillStyle = isBW ? '#000000' : color;
-    ctx.lineWidth = 2;
-
-    // رسم الخط الأساسي
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-
-    if (label) {
-        const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2;
-
-        ctx.save();
-        ctx.translate(midX, midY);
-        
-        let textAngle = angle;
-        if (textAngle > Math.PI / 2 || textAngle < -Math.PI / 2) {
-            textAngle += Math.PI;
-        }
-        ctx.rotate(textAngle);
-
-        ctx.font = 'bold 13px Cairo, sans-serif';
-        const textWidth = ctx.measureText(label).width;
-
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(-textWidth / 2 - 4, -9, textWidth + 8, 18);
-
-        ctx.fillStyle = isBW ? '#000000' : color;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(label, 0, 0);
-        ctx.restore();
-    }
-}
-
-// رسم الخط الحر
-function drawFreehand(ctx, points, color, isBW) {
-    if (points.length < 2) return;
-    ctx.strokeStyle = isBW ? '#000000' : color;
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
-    }
-    ctx.stroke();
-}
-
-// رسم النص
-function drawText(ctx, label, color, isBW) {
-    if (!label) return;
-    ctx.font = 'bold 15px Cairo, sans-serif';
-    const textWidth = ctx.measureText(label).width;
-    
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.fillRect(-textWidth / 2 - 4, -10, textWidth + 8, 20);
-    ctx.strokeStyle = isBW ? '#555555' : hexToRgba(color, 0.5);
-    ctx.lineWidth = 0.5;
-    ctx.strokeRect(-textWidth / 2 - 4, -10, textWidth + 8, 20);
-
-    ctx.fillStyle = isBW ? '#000000' : color;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(label, 0, 0);
-}
-
-// رسم مقبض التحديد للأشكال
-function drawSelectionBox(ctx, el) {
-    ctx.strokeStyle = '#3b82f6';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.strokeRect(-el.w / 2 - 4, -el.h / 2 - 4, el.w + 8, el.h + 8);
-    ctx.setLineDash([]);
-
-    // خط ومقبض التدوير
-    ctx.fillStyle = '#10b981';
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(0, -el.h / 2 - 4);
-    ctx.lineTo(0, -el.h / 2 - 25);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.arc(0, -el.h / 2 - 25, 6, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.stroke();
-
-    // مقبض تكبير الحجم (أسفل اليمين)
-    ctx.fillStyle = '#3b82f6';
-    ctx.beginPath();
-    ctx.rect(el.w / 2 + 2, el.h / 2 + 2, 8, 8);
-    ctx.fill();
-    ctx.stroke();
-}
-
-// --- أدوات التحكم بالرسم والألوان ---
-
-function setSketchTool(tool) {
-    currentSketchTool = tool;
-    
-    // تحديث الشكل البصري للأزرار النشطة
-    const tools = ['select', 'dimension', 'freehand', 'text'];
-    tools.forEach(t => {
-        const btn = document.getElementById(`tool-${t}`);
-        if (btn) {
-            if (t === tool) {
-                btn.className = "flex flex-col items-center justify-center p-2 rounded-lg border border-gray-300 bg-amber-500 text-white transition font-medium text-xs gap-1";
-            } else {
-                btn.className = "flex flex-col items-center justify-center p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition font-medium text-xs gap-1";
-            }
-        }
-    });
-
-    if (tool !== 'select') {
-        selectedSketchElement = null;
-        hideSketchElementControls();
-    }
-    drawSketch();
-}
-
-function setSketchColor(color) {
-    currentSketchColor = color;
-    
-    // تحديث الحلقة المحيطة باللون النشط وإظهار علامة الاختيار
-    const colorButtons = document.querySelectorAll('#sketch-colors button');
-    colorButtons.forEach(btn => {
-        const btnColor = btn.getAttribute('data-color');
-        btn.innerHTML = ''; // تفريغ المحتوى أولاً
-        
-        if (btnColor === color) {
-            btn.className = btn.className.replace(/ring-\d+/g, '').replace(/ring-[a-zA-Z0-9-]+/g, '');
-            btn.classList.add('ring-2', 'ring-offset-2', 'ring-amber-500', 'scale-110');
-            btn.classList.remove('ring-1', 'ring-gray-300');
             
-            // إضافة أيقونة صح بلون مناسب للتوضيح
-            const checkIcon = document.createElement('i');
-            checkIcon.className = "fas fa-check text-xs " + (btnColor === '#f59e0b' ? 'text-gray-900' : 'text-white');
-            btn.appendChild(checkIcon);
-            btn.style.display = 'flex';
-            btn.style.alignItems = 'center';
-            btn.style.justifyContent = 'center';
-        } else {
-            btn.classList.remove('ring-2', 'ring-offset-2', 'ring-amber-500', 'scale-110');
-            btn.classList.add('ring-1', 'ring-gray-300');
-            btn.style.display = '';
-        }
-    });
-
-    if (selectedSketchElement && currentSketchTool === 'select') {
-        selectedSketchElement.color = color;
-        drawSketch();
-    }
-}
-
-function toggleSketchGrid() {
-    showSketchGrid = document.getElementById('sketch-grid-toggle').checked;
-    drawSketch();
-}
-
-// تبديل أبيض وأسود
-function toggleSketchBW() {
-    isSketchBW = document.getElementById('sketch-bw-toggle').checked;
-    drawSketch();
-}
-
-function handleSketchImageUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        sketchBgImageSrcData = event.target.result;
-        sketchBgImage = new Image();
-        sketchBgImage.onload = function() {
-            document.getElementById('sketch-opacity-container').classList.remove('hidden');
-            document.getElementById('sketch-remove-image-btn').classList.remove('hidden');
-            drawSketch();
-        };
-        sketchBgImage.src = sketchBgImageSrcData;
-    };
-    reader.readAsDataURL(file);
-}
-
-function changeSketchImageOpacity(opacity) {
-    sketchBgImageOpacity = parseFloat(opacity);
-    drawSketch();
-}
-
-function removeSketchBackgroundImage() {
-    sketchBgImage = null;
-    sketchBgImageSrcData = null;
-    document.getElementById('sketch-image-upload').value = '';
-    document.getElementById('sketch-opacity-container').classList.add('hidden');
-    document.getElementById('sketch-remove-image-btn').classList.add('hidden');
-    drawSketch();
-}
-
-// --- العمليات على العناصر المحددة ---
-
-function rotateSelectedSketchElement() {
-    if (selectedSketchElement) {
-        selectedSketchElement.angle += 15 * Math.PI / 180; // تدوير بـ 15 درجة
-        drawSketch();
-    }
-}
-
-function duplicateSelectedSketchElement() {
-    if (selectedSketchElement) {
-        const id = Date.now() + Math.random().toString(36).substr(2, 5);
-        let copy = JSON.parse(JSON.stringify(selectedSketchElement));
-        copy.id = id;
-        
-        // إزاحته قليلاً لتمييزه
-        if (copy.type === 'line') {
-            copy.x1 += 20; copy.y1 += 20;
-            copy.x2 += 20; copy.y2 += 20;
-            copy.x += 20; copy.y += 20;
-        } else if (copy.type === 'freehand') {
-            copy.points.forEach(pt => { pt.x += 20; pt.y += 20; });
-            copy.x += 20; copy.y += 20;
-        } else {
-            copy.x += 20;
-            copy.y += 20;
-        }
-
-        sketchElements.push(copy);
-        selectedSketchElement = copy;
-        showSketchElementControls();
-        drawSketch();
-    }
-}
-
-function deleteSelectedSketchElement() {
-    if (selectedSketchElement) {
-        sketchElements = sketchElements.filter(el => el.id !== selectedSketchElement.id);
-        selectedSketchElement = null;
-        hideSketchElementControls();
-        drawSketch();
-    }
-}
-
-function updateSelectedSketchElementText(text) {
-    if (selectedSketchElement) {
-        selectedSketchElement.label = text.trim();
-        drawSketch();
-    }
-}
-
-function addSketchShape(type) {
-    const id = Date.now() + Math.random().toString(36).substr(2, 5);
-    let element = {
-        id: id,
-        type: type,
-        x: 400,
-        y: 550,
-        w: 120,
-        h: 60,
-        angle: 0,
-        color: currentSketchColor,
-        label: ''
-    };
-    if (type === 'square') {
-        element.w = 80;
-        element.h = 80;
-    } else if (type === 'rectangle') {
-        element.w = 120;
-        element.h = 70;
-    } else if (type === 'rounded-rect') {
-        element.w = 120;
-        element.h = 70;
-    } else if (type === 'top-rounded-rect') {
-        element.w = 120;
-        element.h = 70;
-    } else if (type === 'circle') {
-        element.w = 80;
-        element.h = 80;
-    } else if (type === 'ellipse') {
-        element.w = 120;
-        element.h = 80;
-    } else if (type === 'triangle') {
-        element.w = 80;
-        element.h = 80;
-    } else if (type === 'hexagon') {
-        element.w = 80;
-        element.h = 80;
-    } else if (type === 'star') {
-        element.w = 80;
-        element.h = 80;
-    } else if (type === 'arrow-right') {
-        element.w = 100;
-        element.h = 60;
-    } else if (type === 'armchair') {
-        element.w = 60;
-        element.h = 60;
-    } else if (type === 'corner') {
-        element.w = 80;
-        element.h = 80;
-    } else if (type === 'round-corner') {
-        element.w = 80;
-        element.h = 80;
-    } else if (type === 'table') {
-        element.w = 90;
-        element.h = 50;
-    }
-    sketchElements.push(element);
-    selectedSketchElement = element;
-    
-    // تفعيل أداة التحديد تلقائياً لعرض مقابض التعديل مباشرة
-    setSketchTool('select');
-    
-    showSketchElementControls();
-    drawSketch();
-}
-
-function addSketchText(x, y, text) {
-    const id = Date.now() + Math.random().toString(36).substr(2, 5);
-    const element = {
-        id: id,
-        type: 'text',
-        x: x,
-        y: y,
-        w: text.length * 10 + 20,
-        h: 30,
-        angle: 0,
-        color: currentSketchColor,
-        label: text
-    };
-    sketchElements.push(element);
-    selectedSketchElement = element;
-    
-    // تفعيل أداة التحديد تلقائياً
-    setSketchTool('select');
-    
-    showSketchElementControls();
-    drawSketch();
-}
-
-function showSketchElementControls() {
-    const controls = document.getElementById('sketch-element-controls');
-    if (!controls) return;
-    controls.classList.remove('hidden');
-
-    const textEdit = document.getElementById('sketch-text-edit-container');
-    const textInput = document.getElementById('sketch-element-text-input');
-    
-    const textOrLabelTypes = ['text', 'line', 'square', 'rectangle', 'rounded-rect', 'top-rounded-rect', 'circle', 'ellipse', 'triangle', 'hexagon', 'star', 'arrow-right'];
-    if (selectedSketchElement && textOrLabelTypes.includes(selectedSketchElement.type)) {
-        textEdit.classList.remove('hidden');
-        textInput.value = selectedSketchElement.label || '';
-    } else {
-        textEdit.classList.add('hidden');
-    }
-}
-
-function hideSketchElementControls() {
-    const controls = document.getElementById('sketch-element-controls');
-    if (controls) controls.classList.add('hidden');
-}
-
-// --- حفظ واسترجاع ومزامنة البيانات محلياً (Storage & View Listing) ---
-
-function fetchSketches() {
-    const searchVal = document.getElementById('sketch-search').value.toLowerCase().trim();
-    sketches = getFromLocal(StorageKeys.SKETCHES) || [];
-    
-    const filtered = sketches.filter(sk => {
-        return sk.ownerName.toLowerCase().includes(searchVal) ||
-               sk.invoiceNo.toLowerCase().includes(searchVal) ||
-               sk.phone.includes(searchVal);
-    });
-
-    const tbody = document.getElementById('sketches-table-body');
-    if (!tbody) return;
-
-    if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500 border border-gray-300">لا توجد تصاميم محفوظة.</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = filtered.map(sk => {
-        return `
-            <tr class="hover:bg-gray-50">
-                ${wrapCellContent(formatDateDMY(sk.date))}
-                ${wrapCellContent(`<span class="font-bold text-gray-900">${sk.ownerName}</span>`)}
-                ${wrapCellContent(`<span style="direction: ltr; display: inline-block;">${sk.phone}</span>`)}
-                ${wrapCellContent(sk.invoiceNo)}
-                <td class="px-4 py-2 whitespace-nowrap text-sm font-medium space-x-2 space-x-reverse border border-gray-300">
-                    <button type="button" onclick="openEditSketchEditor('${sk.id}')" class="text-blue-600 hover:text-blue-800 transition duration-150">
-                        تعديل
-                    </button>
-                                        <button type="button" onclick="prepareSketchPDF('${sk.id}')" class="text-indigo-600 hover:text-indigo-800 transition duration-150">
-                        تحميل PDF
-                    </button>
-                    <button type="button" onclick="deleteSketch('${sk.id}')" class="text-red-600 hover:text-red-800 transition duration-150">
-                        حذف
-                    </button>
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-function openNewSketchEditor() {
-    currentSketchId = null;
-    sketchElements = [];
-    selectedSketchElement = null;
-    sketchBgImage = null;
-    sketchBgImageSrcData = null;
-
-    document.getElementById('sketch-owner').value = '';
-    document.getElementById('sketch-phone').value = '';
-    document.getElementById('sketch-invoice').value = '';
-
-    document.getElementById('sketch-grid-toggle').checked = true;
-    document.getElementById('sketch-bw-toggle').checked = false;
-    document.getElementById('sketch-image-upload').value = '';
-
-    showSketchGrid = true;
-    isSketchBW = false;
-    
-    document.getElementById('sketch-opacity-container').classList.add('hidden');
-    document.getElementById('sketch-remove-image-btn').classList.add('hidden');
-    
-    setSketchTool('select');
-    setSketchColor('#000000');
-    hideSketchElementControls();
-
-    document.getElementById('sketch-editor-title').textContent = "تصميم كروكي جديد للزبون";
-    document.getElementById('sketches-list-container').classList.add('hidden');
-    document.getElementById('sketch-editor-container').classList.remove('hidden');
-
-    drawSketch();
-}
-
-function openEditSketchEditor(sketchId) {
-    const sk = sketches.find(s => s.id === sketchId);
-    if (!sk) return;
-
-    currentSketchId = sk.id;
-    sketchElements = sk.elements || [];
-    selectedSketchElement = null;
-    sketchBgImage = null;
-    sketchBgImageSrcData = sk.bgImage || null;
-    sketchBgImageOpacity = sk.bgOpacity || 0.5;
-    showSketchGrid = sk.showGrid !== false;
-    isSketchBW = sk.isBW === true;
-
-    document.getElementById('sketch-owner').value = sk.ownerName;
-    document.getElementById('sketch-phone').value = sk.phone;
-    document.getElementById('sketch-invoice').value = sk.invoiceNo;
-
-    document.getElementById('sketch-grid-toggle').checked = showSketchGrid;
-    document.getElementById('sketch-bw-toggle').checked = isSketchBW;
-    document.getElementById('sketch-image-opacity').value = sketchBgImageOpacity;
-
-    if (sketchBgImageSrcData) {
-        sketchBgImage = new Image();
-        sketchBgImage.onload = function() {
-            document.getElementById('sketch-opacity-container').classList.remove('hidden');
-            document.getElementById('sketch-remove-image-btn').classList.remove('hidden');
-            drawSketch();
-        };
-        sketchBgImage.src = sketchBgImageSrcData;
-    } else {
-        document.getElementById('sketch-opacity-container').classList.add('hidden');
-        document.getElementById('sketch-remove-image-btn').classList.add('hidden');
-    }
-
-    setSketchTool('select');
-    setSketchColor(sk.color || '#000000');
-    hideSketchElementControls();
-
-    document.getElementById('sketch-editor-title').textContent = "تعديل تصميم الكروكي";
-    document.getElementById('sketches-list-container').classList.add('hidden');
-    document.getElementById('sketch-editor-container').classList.remove('hidden');
-
-    drawSketch();
-}
-
-function saveSketchDesign() {
-    const ownerName = document.getElementById('sketch-owner').value.trim();
-    const phone = document.getElementById('sketch-phone').value.trim();
-    const invoiceNo = document.getElementById('sketch-invoice').value.trim();
-
-    if (!ownerName || !phone || !invoiceNo) {
-        showAlert('يرجى ملء جميع الحقول الإلزامية المطلوبة (*)', 'error');
-        return;
-    }
-
-    const id = currentSketchId || Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-    const date = currentSketchId ? (sketches.find(s => s.id === currentSketchId).date) : new Date().toISOString().split('T')[0];
-
-    const sketchObject = {
-        id: id,
-        ownerName: ownerName,
-        phone: phone,
-        invoiceNo: invoiceNo,
-        date: date,
-        elements: sketchElements,
-        bgImage: sketchBgImageSrcData,
-        bgOpacity: sketchBgImageOpacity,
-        showGrid: showSketchGrid,
-        isBW: isSketchBW,
-        color: currentSketchColor
-    };
-
-    // حفظ التصميم محلياً فوراً لتجنب فقدان البيانات
-    const index = sketches.findIndex(s => s.id === id);
-    if (index !== -1) {
-        sketches[index] = sketchObject;
-    } else {
-        sketches.unshift(sketchObject);
-    }
-    saveToLocal(StorageKeys.SKETCHES, sketches);
-    closeSketchEditor();
-
-    operationInProgress = true;
-    showAlert('تم حفظ التصميم محلياً، جاري المزامنة مع السيرفر...', 'info');
-
-    scriptRunHelper('saveSketch', [sketchObject], (result) => {
-        if (result && result.error) {
-            console.warn('Sync failed:', result.error);
-            showAlert('تم حفظ الكروكي محلياً (فشلت المزامنة مع السيرفر وسيعاد المحاولة عند تحديث البيانات)', 'warning');
-            return;
-        }
-        showAlert('تم حفظ ومزامنة الكروكي بنجاح مع السيرفر.', 'success');
-    });
-}
-
-function deleteSketch(sketchId) {
-    showCustomConfirm(
-        'حذف التصميم',
-        'هل أنت متأكد من رغبتك في حذف هذا التصميم كلياً؟ لا يمكن استعادته لاحقاً.',
-        () => {
             operationInProgress = true;
-            showAlert('جاري حذف التصميم من السيرفر...', 'info');
-            scriptRunHelper('deleteSketchServer', [sketchId], (result) => {
-                if (result && result.error) {
-                    showAlert(result.error, 'error');
+            const submitButton = event.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'جاري التسجيل...';
+            submitButton.disabled = true;
+            
+            try {
+                const type = document.getElementById('payment-type').value;
+                const targetId = document.getElementById('target-id').value;
+                const targetName = document.getElementById('target-name').value;
+                const paidAmount = parseFloat(document.getElementById('PaidAmount').value);
+                const paymentDate = document.getElementById('PaymentDate').value;
+                const paymentNotes = document.getElementById('PaymentNotes').value;
+
+                if (paidAmount <= 0) {
+                    showAlert('يجب إدخال مبلغ دفع موجب.', 'error');
+                    operationInProgress = false;
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
                     return;
                 }
-                sketches = sketches.filter(s => s.id !== sketchId);
-                saveToLocal(StorageKeys.SKETCHES, sketches);
-                fetchSketches();
-                showAlert('تم حذف التصميم بنجاح.', 'success');
-            });
-        },
-        'warning'
-    );
-}
 
-// --- طباعة الكروكي ---
+                const data = {
+                    type,
+                    targetId,
+                    targetName,
+                    PaidAmount: paidAmount,
+                    PaymentDate: paymentDate,
+                    PaymentNotes: paymentNotes,
+                    InvoiceNo: targetId,
+                    User: 'Admin'
+                };
 
-function prepareSketchPDF(sketchId) {
-    const sk = sketches.find(s => s.id === sketchId);
-    if (!sk) return;
-
-    document.getElementById('print-sketch-owner').textContent = sk.ownerName;
-    document.getElementById('print-sketch-phone').textContent = sk.phone;
-    document.getElementById('print-sketch-invoice').textContent = sk.invoiceNo;
-    document.getElementById('print-sketch-date').textContent = formatDateDMY(sk.date);
-
-    showAlert('جاري معالجة الكروكي للطباعة...', 'info');
-
-    generateSketchImageDataAsync(sk.elements, sk.bgImage, sk.bgOpacity, sk.showGrid, sk.isBW)
-        .then(dataUrl => {
-            const imgElement = document.getElementById('print-sketch-image');
-            imgElement.src = dataUrl;
-            imgElement.onload = function() {
-                window.print();
-                imgElement.onload = null;
-            };
-        });
-}
-
-function downloadSketchPDF() {
-    const ownerName = document.getElementById('sketch-owner').value.trim();
-    const phone = document.getElementById('sketch-phone').value.trim();
-    const invoiceNo = document.getElementById('sketch-invoice').value.trim();
-
-    if (!ownerName || !phone || !invoiceNo) {
-        showAlert('يرجى كتابة اسم الزبون والهاتف ورقم الفاتورة قبل طباعة الكروكي.', 'error');
-        return;
-    }
-
-    document.getElementById('print-sketch-owner').textContent = ownerName;
-    document.getElementById('print-sketch-phone').textContent = phone;
-    document.getElementById('print-sketch-invoice').textContent = invoiceNo;
-    document.getElementById('print-sketch-date').textContent = formatDateDMY(new Date().toISOString().split('T')[0]);
-
-    showAlert('جاري تحضير الكروكي للطباعة...', 'info');
-
-    generateSketchImageDataAsync(sketchElements, sketchBgImageSrcData, sketchBgImageOpacity, showSketchGrid, isSketchBW)
-        .then(dataUrl => {
-            const imgElement = document.getElementById('print-sketch-image');
-            imgElement.src = dataUrl;
-            imgElement.onload = function() {
-                window.print();
-                imgElement.onload = null;
-            };
-        });
-}
-
-function closeSketchEditor() {
-    document.getElementById('sketches-list-container').classList.remove('hidden');
-    document.getElementById('sketch-editor-container').classList.add('hidden');
-    fetchSketches();
-}
-
-// --- دالة توليد صورة الكروكي غير المتزامنة للمودال ---
-
-function generateSketchImageDataAsync(elements, bgImageSrc, bgOpacity, showGrid, isBW) {
-    return new Promise((resolve) => {
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = 800;
-        tempCanvas.height = 600;
-        const tempCtx = tempCanvas.getContext('2d');
-        
-        const render = () => {
-            // رسم شبكة المربعات
-            if (showGrid) {
-                for (let x = 0; x < 800; x += 20) {
-                    tempCtx.beginPath();
-                    tempCtx.moveTo(x, 0);
-                    tempCtx.lineTo(x, 600);
-                    if (x % 100 === 0) {
-                        tempCtx.strokeStyle = 'rgba(0, 0, 0, 0.28)';
-                        tempCtx.lineWidth = 1.0;
-                    } else {
-                        tempCtx.strokeStyle = 'rgba(0, 0, 0, 0.14)';
-                        tempCtx.lineWidth = 0.6;
-                    }
-                    tempCtx.stroke();
+                if (type === 'invoice') {
+                    addInvoicePaymentSubmit(data);
+                } else if (type === 'worker') {
+                    addWorkerPaymentSubmit(data);
+                } else if (type === 'shop') {
+                    addShopPaymentSubmit(data);
                 }
-                for (let y = 0; y < 600; y += 20) {
-                    tempCtx.beginPath();
-                    tempCtx.moveTo(0, y);
-                    tempCtx.lineTo(800, y);
-                    if (y % 100 === 0) {
-                        tempCtx.strokeStyle = 'rgba(0, 0, 0, 0.28)';
-                        tempCtx.lineWidth = 1.0;
-                    } else {
-                        tempCtx.strokeStyle = 'rgba(0, 0, 0, 0.14)';
-                        tempCtx.lineWidth = 0.6;
-                    }
-                    tempCtx.stroke();
-                }
-            }
-            
-            // رسم كل عنصر رسومي
-            elements.forEach(el => {
-                tempCtx.save();
-                if (el.type === 'line') {
-                    drawDimensionLine(tempCtx, el.x1, el.y1, el.x2, el.y2, el.color, el.label, isBW);
-                } else if (el.type === 'freehand') {
-                    drawFreehand(tempCtx, el.points, el.color, isBW);
-                } else {
-                    tempCtx.translate(el.x, el.y);
-                    tempCtx.rotate(el.angle);
-                    if (el.type === 'sofa') drawSofa(tempCtx, el.w, el.h, el.color, isBW);
-                    else if (el.type === 'armchair') drawArmchair(tempCtx, el.w, el.h, el.color, isBW);
-                    else if (el.type === 'corner') drawCorner(tempCtx, el.w, el.h, el.color, isBW);
-                    else if (el.type === 'round-corner') drawRoundCorner(tempCtx, el.w, el.h, el.color, isBW);
-                    else if (el.type === 'table') drawTable(tempCtx, el.w, el.h, el.color, isBW);
-                    else if (el.type === 'text') drawText(tempCtx, el.label, el.color, isBW);
-                    // NEW GEOMETRIC SHAPES
-                    else if (el.type === 'square') drawRectangle(tempCtx, el.w, el.h, el.color, isBW, el.label, 0);
-                    else if (el.type === 'rectangle') drawRectangle(tempCtx, el.w, el.h, el.color, isBW, el.label, 0);
-                    else if (el.type === 'rounded-rect') drawRectangle(tempCtx, el.w, el.h, el.color, isBW, el.label, 8);
-                    else if (el.type === 'top-rounded-rect') drawRectangle(tempCtx, el.w, el.h, el.color, isBW, el.label, { tl: 10, tr: 10, br: 0, bl: 0 });
-                    else if (el.type === 'circle') drawEllipse(tempCtx, el.w, el.h, el.color, isBW, el.label);
-                    else if (el.type === 'ellipse') drawEllipse(tempCtx, el.w, el.h, el.color, isBW, el.label);
-                    else if (el.type === 'triangle') drawTriangle(tempCtx, el.w, el.h, el.color, isBW, el.label);
-                    else if (el.type === 'hexagon') drawHexagon(tempCtx, el.w, el.h, el.color, isBW, el.label);
-                    else if (el.type === 'star') drawStar(tempCtx, el.w, el.h, el.color, isBW, el.label);
-                    else if (el.type === 'arrow-right') drawArrowRight(tempCtx, el.w, el.h, el.color, isBW, el.label);
-                }
-                tempCtx.restore();
-            });
-            
-            resolve(tempCanvas.toDataURL('image/png'));
-        };
-
-        if (bgImageSrc) {
-            const img = new Image();
-            img.onload = () => {
-                tempCtx.globalAlpha = bgOpacity;
-                if (isBW) tempCtx.filter = 'grayscale(100%)';
-                tempCtx.drawImage(img, 0, 0, 800, 600);
-                tempCtx.globalAlpha = 1.0;
-                tempCtx.filter = 'none';
-                render();
-            };
-            img.onerror = () => {
-                render();
-            };
-            img.src = bgImageSrc;
-        } else {
-            render();
-        }
-    });
-}
-
-// --- دالة تهيئة الأحداث على الكانفاس ---
-function initSketchCanvas() {
-    const canvas = document.getElementById('sketch-canvas');
-    if (!canvas) return;
-
-    // تهيئة أحداث الماوس
-    canvas.addEventListener('mousedown', handleSketchStart);
-    canvas.addEventListener('mousemove', handleSketchMove);
-    canvas.addEventListener('mouseup', handleSketchEnd);
-    canvas.addEventListener('mouseout', handleSketchEnd);
-
-    // تهيئة أحداث اللمس للهواتف والأجهزة اللوحية مباشرة
-    canvas.addEventListener('touchstart', handleSketchStart, { passive: false });
-    canvas.addEventListener('touchmove', handleSketchMove, { passive: false });
-    canvas.addEventListener('touchend', handleSketchEnd, { passive: false });
-    canvas.addEventListener('touchcancel', handleSketchEnd, { passive: false });
-}
-
-// --- أحداث محرك الرسم ---
-
-function handleSketchStart(e) {
-    const canvas = document.getElementById('sketch-canvas');
-    const coords = getCanvasCoords(e, canvas);
-    
-    // منع التمرير على الجوال عند التفاعل مع أداة الرسم أو جر الأشكال
-    if (e.type === 'touchstart') {
-        const clickedEl = hitTest(coords);
-        if (currentSketchTool !== 'select' || clickedEl) {
-            e.preventDefault();
-        }
-    }
-    
-    if (currentSketchTool === 'select') {
-        if (selectedSketchElement) {
-            // التحقق من تدوير العنصر المحدد
-            const rotateH = getRotateHandleCenter(selectedSketchElement);
-            if (distance(coords, rotateH) < 12) {
-                sketchActionMode = 'rotating';
-                sketchRotateStartAngle = Math.atan2(coords.y - selectedSketchElement.y, coords.x - selectedSketchElement.x) - selectedSketchElement.angle;
-                return;
-            }
-            // التحقق من تغيير حجم العنصر المحدد
-            const resizeH = getResizeHandleCenter(selectedSketchElement);
-            if (distance(coords, resizeH) < 12) {
-                sketchActionMode = 'resizing';
-                sketchStartPoint = coords;
-                sketchResizeStartSize = { w: selectedSketchElement.w, h: selectedSketchElement.h };
-                return;
+                
+                operationInProgress = false;
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+                
+            } catch (error) {
+                operationInProgress = false;
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+                showAlert('حدث خطأ أثناء المعالجة', 'error');
             }
         }
         
-        const clickedEl = hitTest(coords);
-        if (clickedEl) {
-            selectedSketchElement = clickedEl;
-            sketchActionMode = 'dragging';
-            sketchStartPoint = coords;
-            sketchDragOffset = { x: coords.x - clickedEl.x, y: coords.y - clickedEl.y };
-            showSketchElementControls();
-            drawSketch();
-        } else {
-            selectedSketchElement = null;
-            hideSketchElementControls();
-            drawSketch();
+        let sidebar = document.getElementById('sidebar');
+        let mainContent = document.getElementById('main-content');
+        let toggleButton = document.getElementById('sidebar-toggle');
+
+        function openSidebar() {
+             sidebar.classList.remove('translate-x-full');
+             sidebar.classList.add('translate-x-0');
         }
-    } else if (currentSketchTool === 'freehand') {
-        sketchActionMode = 'drawing';
-        sketchElements.push({
-            id: 'freehand_' + Date.now(),
-            type: 'freehand',
-            points: [coords],
-            color: currentSketchColor
+
+        function closeSidebar() {
+             if (window.innerWidth < 768) {
+                 sidebar.classList.remove('translate-x-0');
+                 sidebar.classList.add('translate-x-full');
+             }
+        }
+
+        toggleButton.addEventListener('click', () => {
+             if (sidebar.classList.contains('translate-x-full')) {
+                 openSidebar();
+             } else {
+                 closeSidebar();
+             }
         });
-    } else if (currentSketchTool === 'dimension') {
-        sketchActionMode = 'drawing';
-        sketchElements.push({
-            id: 'line_' + Date.now(),
-            type: 'line',
-            x1: coords.x,
-            y1: coords.y,
-            x2: coords.x,
-            y2: coords.y,
-            color: currentSketchColor
+
+        mainContent.addEventListener('click', (event) => {
+             if (window.innerWidth < 768 && !sidebar.classList.contains('translate-x-full')) {
+                 if (!sidebar.contains(event.target) && !toggleButton.contains(event.target)) {
+                     closeSidebar();
+                 }
+             }
         });
-    } else if (currentSketchTool === 'text') {
-        const text = prompt('أدخل النص المطلوب:');
-        if (text && text.trim()) {
-            sketchElements.push({
-                id: 'text_' + Date.now(),
-                type: 'text',
-                x: coords.x,
-                y: coords.y,
-                label: text.trim(),
-                color: currentSketchColor
-            });
-            drawSketch();
+
+        function toggleSidebar() {
+             if (sidebar.classList.contains('translate-x-full')) {
+                 openSidebar();
+             } else {
+                 closeSidebar();
+             }
         }
-    }
-}
-
-function handleSketchMove(e) {
-    if (!sketchActionMode) return;
-    const canvas = document.getElementById('sketch-canvas');
-    const coords = getCanvasCoords(e, canvas);
-    
-    if (e.type === 'touchmove') {
-        e.preventDefault(); // منع التمرير عند الرسم أو الجر
-    }
-    
-    if (sketchActionMode === 'dragging' && selectedSketchElement) {
-        if (selectedSketchElement.type === 'freehand') {
-            // تحريك كل النقاط
-            const dx = coords.x - sketchStartPoint.x;
-            const dy = coords.y - sketchStartPoint.y;
-            selectedSketchElement.points.forEach(pt => {
-                pt.x += dx;
-                pt.y += dy;
-            });
-            sketchStartPoint = coords;
-        } else if (selectedSketchElement.type === 'line') {
-            const dx = coords.x - sketchStartPoint.x;
-            const dy = coords.y - sketchStartPoint.y;
-            selectedSketchElement.x1 += dx;
-            selectedSketchElement.y1 += dy;
-            selectedSketchElement.x2 += dx;
-            selectedSketchElement.y2 += dy;
-            sketchStartPoint = coords;
-        } else {
-            selectedSketchElement.x = coords.x - sketchDragOffset.x;
-            selectedSketchElement.y = coords.y - sketchDragOffset.y;
-        }
-        drawSketch();
-    } else if (sketchActionMode === 'rotating' && selectedSketchElement) {
-        const angle = Math.atan2(coords.y - selectedSketchElement.y, coords.x - selectedSketchElement.x);
-        selectedSketchElement.angle = angle - sketchRotateStartAngle;
-        drawSketch();
-    } else if (sketchActionMode === 'resizing' && selectedSketchElement) {
-        const local = globalToLocal(coords.x, coords.y, selectedSketchElement);
-        selectedSketchElement.w = Math.max(20, Math.abs(local.x) * 2);
-        selectedSketchElement.h = Math.max(20, Math.abs(local.y) * 2);
-        drawSketch();
-    } else if (sketchActionMode === 'drawing') {
-        const activeEl = sketchElements[sketchElements.length - 1];
-        if (activeEl.type === 'freehand') {
-            activeEl.points.push(coords);
-            drawSketch();
-        } else if (activeEl.type === 'line') {
-            activeEl.x2 = coords.x;
-            activeEl.y2 = coords.y;
-            drawSketch();
-        }
-    }
-}
-
-function handleSketchEnd(e) {
-    if (sketchActionMode === 'drawing') {
-        const activeEl = sketchElements[sketchElements.length - 1];
-        if (activeEl && activeEl.type === 'line') {
-            const label = prompt('أدخل قياس البعد (مثال: 120 أو 1.5m):');
-            if (label && label.trim()) {
-                activeEl.label = label.trim();
-            } else {
-                // إزالة الخط إذا لم يتم إدخال قياس
-                sketchElements.pop();
-            }
-            drawSketch();
-        }
-    }
-    sketchActionMode = null;
-}
-
-// --- دوال التحويل الحسابية والمساعدات الهندسية ---
-
-function getCanvasCoords(e, canvas) {
-    const rect = canvas.getBoundingClientRect();
-    let clientX, clientY;
-    if (e.touches && e.touches.length > 0) {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-    } else if (e.changedTouches && e.changedTouches.length > 0) {
-        clientX = e.changedTouches[0].clientX;
-        clientY = e.changedTouches[0].clientY;
-    } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-    }
-    return {
-        x: ((clientX - rect.left) / rect.width) * canvas.width,
-        y: ((clientY - rect.top) / rect.height) * canvas.height
-    };
-}
-
-function distance(p1, p2) {
-    return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
-}
-
-function localToGlobal(lx, ly, el) {
-    const cos = Math.cos(el.angle || 0);
-    const sin = Math.sin(el.angle || 0);
-    return {
-        x: el.x + lx * cos - ly * sin,
-        y: el.y + lx * sin + ly * cos
-    };
-}
-
-function globalToLocal(gx, gy, el) {
-    const dx = gx - el.x;
-    const dy = gy - el.y;
-    const cos = Math.cos(-(el.angle || 0));
-    const sin = Math.sin(-(el.angle || 0));
-    return {
-        x: dx * cos - dy * sin,
-        y: dx * sin + dy * cos
-    };
-}
-
-function getRotateHandleCenter(el) {
-    return localToGlobal(0, -el.h / 2 - 25, el);
-}
-
-function getResizeHandleCenter(el) {
-    return localToGlobal(el.w / 2, el.h / 2, el);
-}
-
-function hitTest(coords) {
-    for (let i = sketchElements.length - 1; i >= 0; i--) {
-        const el = sketchElements[i];
-        if (el.type === 'freehand') {
-            for (let pt of el.points) {
-                if (distance(coords, pt) < 15) return el;
-            }
-        } else if (el.type === 'line') {
-            if (isPointNearSeg(coords, { x: el.x1, y: el.y1 }, { x: el.x2, y: el.y2 }, 15)) {
-                return el;
-            }
-        } else {
-            const local = globalToLocal(coords.x, coords.y, el);
-            if (local.x >= -el.w / 2 && local.x <= el.w / 2 && local.y >= -el.h / 2 && local.y <= el.h / 2) {
-                return el;
-            }
-        }
-    }
-    return null;
-}
-
-function isPointNearSeg(p, a, b, threshold) {
-    const l2 = Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2);
-    if (l2 === 0) return distance(p, a) < threshold;
-    let t = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / l2;
-    t = Math.max(0, Math.min(1, t));
-    const projection = {
-        x: a.x + t * (b.x - a.x),
-        y: a.y + t * (b.y - a.y)
-    };
-    return distance(p, projection) < threshold;
-}
-
-function roundRect(ctx, x, y, width, height, radius) {
-    if (typeof radius === 'number') {
-        radius = { tl: radius, tr: radius, br: radius, bl: radius };
-    } else if (typeof radius === 'undefined') {
-        radius = { tl: 0, tr: 0, br: 0, bl: 0 };
-    }
-    ctx.beginPath();
-    ctx.moveTo(x + radius.tl, y);
-    ctx.lineTo(x + width - radius.tr, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
-    ctx.lineTo(x + width, y + height - radius.br);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
-    ctx.lineTo(x + radius.bl, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
-    ctx.lineTo(x, y + radius.tl);
-    ctx.quadraticCurveTo(x, y, x + radius.tl, y);
-    ctx.closePath();
-}
-
-// --- دالة الرسم الأساسية للكروكي ---
-function drawSketch() {
-    const canvas = document.getElementById('sketch-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    
-    // 1. مسح اللوحة
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // 2. رسم صورة الخلفية المرجعية
-    if (sketchBgImage) {
-        ctx.save();
-        ctx.globalAlpha = sketchBgImageOpacity;
-        if (isSketchBW) {
-            ctx.filter = 'grayscale(100%)';
-        }
-        ctx.drawImage(sketchBgImage, 0, 0, canvas.width, canvas.height);
-        ctx.restore();
-    }
-    
-    // 3. رسم شبكة المربعات (مثل ورقة الرسم البياني)
-    if (showSketchGrid) {
-        ctx.save();
-        for (let x = 0; x < canvas.width; x += 20) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, canvas.height);
-            if (x % 100 === 0) {
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.28)';
-                ctx.lineWidth = 1.0;
-            } else {
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.14)';
-                ctx.lineWidth = 0.6;
-            }
-            ctx.stroke();
-        }
-        for (let y = 0; y < canvas.height; y += 20) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(canvas.width, y);
-            if (y % 100 === 0) {
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.28)';
-                ctx.lineWidth = 1.0;
-            } else {
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.14)';
-                ctx.lineWidth = 0.6;
-            }
-            ctx.stroke();
-        }
-        ctx.restore();
-    }
-    
-    // 4. رسم كل عنصر رسومي
-    sketchElements.forEach(el => {
-        ctx.save();
-        if (el.type === 'line') {
-            drawDimensionLine(ctx, el.x1, el.y1, el.x2, el.y2, el.color, el.label, isSketchBW);
-            
-            // رسم المقابض للخط القياسي عند التحديد
-            if (selectedSketchElement === el && currentSketchTool === 'select') {
-                ctx.fillStyle = '#3b82f6';
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 1.5;
-                
-                ctx.beginPath();
-                ctx.arc(el.x1, el.y1, 6, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.stroke();
-                
-                ctx.beginPath();
-                ctx.arc(el.x2, el.y2, 6, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.stroke();
-            }
-        } else if (el.type === 'freehand') {
-            drawFreehand(ctx, el.points, el.color, isSketchBW);
-            
-            // رسم المقبض للرسم الحر عند التحديد
-            if (selectedSketchElement === el && currentSketchTool === 'select') {
-                ctx.fillStyle = '#3b82f6';
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.arc(el.x, el.y, 6, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.stroke();
-            }
-        } else {
-            ctx.translate(el.x, el.y);
-            ctx.rotate(el.angle || 0);
-            
-            if (el.type === 'sofa') drawSofa(ctx, el.w, el.h, el.color, isSketchBW);
-            else if (el.type === 'armchair') drawArmchair(ctx, el.w, el.h, el.color, isSketchBW);
-            else if (el.type === 'corner') drawCorner(ctx, el.w, el.h, el.color, isSketchBW);
-            else if (el.type === 'round-corner') drawRoundCorner(ctx, el.w, el.h, el.color, isSketchBW);
-            else if (el.type === 'table') drawTable(ctx, el.w, el.h, el.color, isSketchBW);
-            else if (el.type === 'text') drawText(ctx, el.label, el.color, isSketchBW);
-            // NEW GEOMETRIC SHAPES
-            else if (el.type === 'square') drawRectangle(ctx, el.w, el.h, el.color, isSketchBW, el.label, 0);
-            else if (el.type === 'rectangle') drawRectangle(ctx, el.w, el.h, el.color, isSketchBW, el.label, 0);
-            else if (el.type === 'rounded-rect') drawRectangle(ctx, el.w, el.h, el.color, isSketchBW, el.label, 8);
-            else if (el.type === 'top-rounded-rect') drawRectangle(ctx, el.w, el.h, el.color, isSketchBW, el.label, { tl: 10, tr: 10, br: 0, bl: 0 });
-            else if (el.type === 'circle') drawEllipse(ctx, el.w, el.h, el.color, isSketchBW, el.label);
-            else if (el.type === 'ellipse') drawEllipse(ctx, el.w, el.h, el.color, isSketchBW, el.label);
-            else if (el.type === 'triangle') drawTriangle(ctx, el.w, el.h, el.color, isSketchBW, el.label);
-            else if (el.type === 'hexagon') drawHexagon(ctx, el.w, el.h, el.color, isSketchBW, el.label);
-            else if (el.type === 'star') drawStar(ctx, el.w, el.h, el.color, isSketchBW, el.label);
-            else if (el.type === 'arrow-right') drawArrowRight(ctx, el.w, el.h, el.color, isSketchBW, el.label);
-            
-            // رسم مقابض التحديد وتغيير الحجم والتدوير
-            if (selectedSketchElement === el && currentSketchTool === 'select') {
-                drawSelectionBox(ctx, el);
-            }
-        }
-        ctx.restore();
-    });
-}
-
-// تصدير وتصدير الدوال لربطها بالواجهة الرسومية
-window.openNewSketchEditor = openNewSketchEditor;
-window.setSketchTool = setSketchTool;
-window.addSketchShape = addSketchShape;
-window.setSketchColor = setSketchColor;
-window.toggleSketchGrid = toggleSketchGrid;
-window.toggleSketchBW = toggleSketchBW;
-window.handleSketchImageUpload = handleSketchImageUpload;
-window.changeSketchImageOpacity = changeSketchImageOpacity;
-window.removeSketchBackgroundImage = removeSketchBackgroundImage;
-window.rotateSelectedSketchElement = rotateSelectedSketchElement;
-window.duplicateSelectedSketchElement = duplicateSelectedSketchElement;
-window.deleteSelectedSketchElement = deleteSelectedSketchElement;
-window.updateSelectedSketchElementText = updateSelectedSketchElementText;
-window.saveSketchDesign = saveSketchDesign;
-window.downloadSketchPDF = downloadSketchPDF;
-
-window.closeSketchEditor = closeSketchEditor;
-window.fetchSketches = fetchSketches;
-window.openEditSketchEditor = openEditSketchEditor;
-window.prepareSketchPDF = prepareSketchPDF;
-window.deleteSketch = deleteSketch;
-window.initSketchCanvas = initSketchCanvas;
-
-// تصدير دوال القائمة الجانبية للنافذة لربطها بالزر
-window.toggleSidebar = toggleSidebar;
-window.openSidebar = openSidebar;
-window.closeSidebar = closeSidebar;
-
-
-// ====================================================================
-// NEW: دوال رسم الأشكال الهندسية الجديدة والتسميات
-// ====================================================================
-
-function drawShapeLabel(ctx, label, color, isBW) {
-    ctx.save();
-    ctx.font = 'bold 14px Cairo, sans-serif';
-    ctx.fillStyle = isBW ? '#000000' : color;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(label, 0, 0);
-    ctx.restore();
-}
-
-function drawRectangle(ctx, w, h, color, isBW, label, radius = 0) {
-    ctx.strokeStyle = isBW ? '#000000' : color;
-    ctx.fillStyle = isBW ? 'rgba(255,255,255,0.85)' : hexToRgba(color, 0.15);
-    ctx.lineWidth = 2.5;
-
-    ctx.beginPath();
-    if (radius) {
-        roundRect(ctx, -w / 2, -h / 2, w, h, radius);
-    } else {
-        ctx.rect(-w / 2, -h / 2, w, h);
-    }
-    ctx.fill();
-    ctx.stroke();
-
-    if (label) {
-        drawShapeLabel(ctx, label, color, isBW);
-    }
-}
-
-function drawEllipse(ctx, w, h, color, isBW, label) {
-    ctx.strokeStyle = isBW ? '#000000' : color;
-    ctx.fillStyle = isBW ? 'rgba(255,255,255,0.85)' : hexToRgba(color, 0.15);
-    ctx.lineWidth = 2.5;
-
-    ctx.beginPath();
-    ctx.ellipse(0, 0, Math.abs(w / 2), Math.abs(h / 2), 0, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.stroke();
-
-    if (label) {
-        drawShapeLabel(ctx, label, color, isBW);
-    }
-}
-
-function drawTriangle(ctx, w, h, color, isBW, label) {
-    ctx.strokeStyle = isBW ? '#000000' : color;
-    ctx.fillStyle = isBW ? 'rgba(255,255,255,0.85)' : hexToRgba(color, 0.15);
-    ctx.lineWidth = 2.5;
-
-    ctx.beginPath();
-    ctx.moveTo(0, -h / 2);
-    ctx.lineTo(w / 2, h / 2);
-    ctx.lineTo(-w / 2, h / 2);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    if (label) {
-        ctx.save();
-        ctx.translate(0, h / 6);
-        drawShapeLabel(ctx, label, color, isBW);
-        ctx.restore();
-    }
-}
-
-function drawHexagon(ctx, w, h, color, isBW, label) {
-    ctx.strokeStyle = isBW ? '#000000' : color;
-    ctx.fillStyle = isBW ? 'rgba(255,255,255,0.85)' : hexToRgba(color, 0.15);
-    ctx.lineWidth = 2.5;
-
-    ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-        const angle = (i * Math.PI) / 3;
-        const x = (w / 2) * Math.cos(angle);
-        const y = (h / 2) * Math.sin(angle);
-        if (i === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
-        }
-    }
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    if (label) {
-        drawShapeLabel(ctx, label, color, isBW);
-    }
-}
-
-function drawStar(ctx, w, h, color, isBW, label) {
-    ctx.strokeStyle = isBW ? '#000000' : color;
-    ctx.fillStyle = isBW ? 'rgba(255,255,255,0.85)' : hexToRgba(color, 0.15);
-    ctx.lineWidth = 2.5;
-
-    const cx = 0;
-    const cy = 0;
-    const spikes = 5;
-    const outerRadius = Math.min(w, h) / 2;
-    const innerRadius = outerRadius * 0.4;
-
-    let rot = Math.PI / 2 * 3;
-    let x = cx;
-    let y = cy;
-    const step = Math.PI / spikes;
-
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - outerRadius);
-    for (let i = 0; i < spikes; i++) {
-        x = cx + Math.cos(rot) * outerRadius;
-        y = cy + Math.sin(rot) * outerRadius;
-        ctx.lineTo(x, y);
-        rot += step;
-
-        x = cx + Math.cos(rot) * innerRadius;
-        y = cy + Math.sin(rot) * innerRadius;
-        ctx.lineTo(x, y);
-        rot += step;
-    }
-    ctx.lineTo(cx, cy - outerRadius);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    if (label) {
-        drawShapeLabel(ctx, label, color, isBW);
-    }
-}
-
-function drawArrowRight(ctx, w, h, color, isBW, label) {
-    ctx.strokeStyle = isBW ? '#000000' : color;
-    ctx.fillStyle = isBW ? 'rgba(255,255,255,0.85)' : hexToRgba(color, 0.15);
-    ctx.lineWidth = 2.5;
-
-    ctx.beginPath();
-    ctx.moveTo(-w / 2, -h / 4);
-    ctx.lineTo(0, -h / 4);
-    ctx.lineTo(0, -h / 2);
-    ctx.lineTo(w / 2, 0);
-    ctx.lineTo(0, h / 2);
-    ctx.lineTo(0, h / 4);
-    ctx.lineTo(-w / 2, h / 4);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    if (label) {
-        ctx.save();
-        ctx.translate(-w / 10, 0);
-        drawShapeLabel(ctx, label, color, isBW);
-        ctx.restore();
-    }
-}
+        window.toggleSidebar = toggleSidebar;
