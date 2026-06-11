@@ -118,7 +118,7 @@
     <div id="main-app" class="hidden flex h-screen">
 
         <!-- Sidebar -->
-        <div id="sidebar" class="sidebar fixed top-0 right-0 h-full w-64 bg-white shadow-xl p-4 transform translate-x-full md:translate-x-0 z-20">
+        <div id="sidebar" class="sidebar fixed top-0 right-0 h-full w-64 bg-white shadow-xl p-4 transform translate-x-full md:translate-x-0 md:relative md:shadow-none md:flex-shrink-0">
             <div class="flex flex-col items-center justify-center mb-6">
                 <img src="logo.png" alt="MEUBLE ART DESIGN Logo" class="h-20 mr-2"/>
                 <button onclick="manualSync(event)" class="mt-4 flex items-center text-sm text-amber-600 hover:text-amber-700 transition font-bold no-print" title="تحديث البيانات">
@@ -160,10 +160,6 @@
                     <i class="fas fa-chart-line h-5 w-5"></i>
                     <span class="mr-2">قائمة الدخل (الربح والخسارة)</span>
                 </a>
-                <a id="nav-sketches" href="#" onclick="showView('sketches')" class="flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-amber-100 text-gray-700">
-                    <i class="fas fa-pencil-ruler h-5 w-5"></i>
-                    <span class="mr-2">تصميم كروكي</span>
-                </a>
                 <a id="nav-users" href="#" onclick="showView('users')" class="flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-amber-100 text-gray-700">
                     <i class="fas fa-user-shield h-5 w-5"></i>
                     <span class="mr-2">إدارة المستخدمين</span>
@@ -180,12 +176,12 @@
             </nav>
         </div>
         
-        <button id="sidebar-toggle" onclick="toggleSidebar()" class="p-4 fixed top-0 right-0 md:right-64 z-30 bg-amber-500 text-white rounded-bl-lg shadow-lg transition-all duration-300">
+        <button id="sidebar-toggle" class="md:hidden p-4 fixed top-0 right-0 z-30 bg-amber-500 text-white rounded-bl-lg shadow-lg">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
         </button>
 
         <!-- Main Content Area -->
-        <div id="main-content" class="flex-1 overflow-y-auto p-4 md:p-8 main-content md:mr-64">
+        <div id="main-content" class="flex-1 overflow-y-auto p-4 md:p-8 main-content">
             <div id="alert-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 w-full max-w-sm hidden">
                 <div id="alert-box" class="p-3 rounded-xl shadow-lg text-sm font-medium text-center" style="direction: rtl;"></div>
             </div>
@@ -221,216 +217,6 @@
                 </div>
             </div>
             
-            <!-- Sketches View -->
-            <div id="sketches-view" class="view hidden">
-                <div id="sketches-list-container">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4">
-                        <h2 class="text-3xl font-bold text-gray-800">تصميم وتخطيط الكروكي</h2>
-                        <button onclick="openNewSketchEditor()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition duration-150 flex items-center gap-2 mt-4 md:mt-0">
-                            <i class="fas fa-plus"></i>
-                            <span>تصميم كروكي جديد</span>
-                        </button>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-xl shadow-md mb-8">
-                        <div class="flex flex-col md:flex-row justify-between mb-4 gap-4">
-                            <input type="text" id="sketch-search" oninput="fetchSketches()" class="p-2 border border-gray-400 rounded-lg w-full md:w-1/3 focus:ring-amber-500 focus:border-amber-500 text-right" placeholder="بحث باسم الزبون أو رقم الفاتورة...">
-                        </div>
-                        
-                        <div class="table-responsive">
-                            <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered">
-                                <thead class="bg-gray-50 border-b border-gray-300">
-                                    <tr>
-                                        <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">تاريخ التصميم</th>
-                                        <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">اسم الزبون</th>
-                                        <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الهاتف</th>
-                                        <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">رقم الفاتورة</th>
-                                        <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الإجراءات</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="sketches-table-body" class="bg-white divide-y divide-gray-200">
-                                    <tr><td colspan="5" class="text-center py-4 text-gray-500 border border-gray-300">جاري تحميل التصاميم...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sketch Editor View -->
-                <div id="sketch-editor-container" class="hidden bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b pb-4">
-                        <h3 id="sketch-editor-title" class="text-2xl font-bold text-gray-800">تصميم كروكي جديد</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <button type="button" onclick="saveSketchDesign()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition duration-150 flex items-center gap-2 text-sm">
-                                <i class="fas fa-save"></i>
-                                <span>حفظ التصميم</span>
-                            </button>
-                            <button type="button" onclick="downloadSketchPDF()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl shadow-md transition duration-150 flex items-center gap-2 text-sm">
-                                <i class="fas fa-print"></i>
-                                <span>طباعة الكروكي</span>
-                            </button>
-                            <button type="button" onclick="closeSketchEditor()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl transition duration-150 text-sm">
-                                <span>إلغاء والعودة</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Customer Details Form -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">اسم الزبون <span class="text-red-500">*</span></label>
-                            <input type="text" id="sketch-owner" required class="input-field" placeholder="أدخل اسم الزبون">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">رقم الهاتف <span class="text-red-500">*</span></label>
-                            <input type="tel" id="sketch-phone" required class="input-field" placeholder="أدخل رقم الهاتف">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">رقم الفاتورة <span class="text-red-500">*</span></label>
-                            <input type="text" id="sketch-invoice" required class="input-field" placeholder="أدخل رقم الفاتورة">
-                        </div>
-                    </div>
-
-                    <!-- Canvas Workspace Layout -->
-                    <div class="flex flex-col lg:flex-row gap-6 mb-6">
-                        <!-- Left Panel: Toolbox -->
-                        <div class="w-full lg:w-64 flex-shrink-0 bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col gap-6">
-                            <div>
-                                <h4 class="font-bold text-sm text-gray-700 mb-3 border-b pb-1">أدوات التحكم باللوحة</h4>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button id="tool-select" onclick="setSketchTool('select')" class="flex flex-col items-center justify-center p-2 rounded-lg border border-gray-300 bg-amber-500 text-white transition font-medium text-xs gap-1" title="تحديد وتحريك الأشكال">
-                                        <i class="fas fa-mouse-pointer text-base"></i>
-                                        <span>تحديد</span>
-                                    </button>
-                                    <button id="tool-dimension" onclick="setSketchTool('dimension')" class="flex flex-col items-center justify-center p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition font-medium text-xs gap-1" title="رسم خط قياس ذو سهمين">
-                                        <i class="fas fa-arrows-alt-h text-base"></i>
-                                        <span>قياس</span>
-                                    </button>
-                                    <button id="tool-freehand" onclick="setSketchTool('freehand')" class="flex flex-col items-center justify-center p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition font-medium text-xs gap-1" title="رسم حر بالقلم">
-                                        <i class="fas fa-pencil-alt text-base"></i>
-                                        <span>قلم حر</span>
-                                    </button>
-                                    <button id="tool-text" onclick="setSketchTool('text')" class="flex flex-col items-center justify-center p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition font-medium text-xs gap-1" title="إضافة نص توضيحي">
-                                        <i class="fas fa-font text-base"></i>
-                                        <span>نص</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 class="font-bold text-sm text-gray-700 mb-3 border-b pb-1">إضافة أشكال هندسية</h4>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button type="button" onclick="addSketchShape('square')" class="flex items-center justify-start p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition text-[11px] gap-2 font-medium" title="إضافة مربع">
-                                        <i class="far fa-square text-amber-500 text-sm"></i>
-                                        <span>مربع</span>
-                                    </button>
-                                    <button type="button" onclick="addSketchShape('rectangle')" class="flex items-center justify-start p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition text-[11px] gap-2 font-medium" title="إضافة مستطيل">
-                                        <i class="fas fa-vector-square text-amber-500 text-sm"></i>
-                                        <span>مستطيل</span>
-                                    </button>
-                                    <button type="button" onclick="addSketchShape('rounded-rect')" class="flex items-center justify-start p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition text-[11px] gap-2 font-medium" title="إضافة مستطيل دائري">
-                                        <i class="far fa-square text-amber-500 text-sm" style="border-radius: 4px; border: 1.5px solid #f59e0b; padding: 1px;"></i>
-                                        <span>مستطيل دائري</span>
-                                    </button>
-                                    <button type="button" onclick="addSketchShape('top-rounded-rect')" class="flex items-center justify-start p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition text-[11px] gap-2 font-medium" title="إضافة مستطيل علوي دائري">
-                                        <i class="far fa-square text-amber-500 text-sm" style="border-top-left-radius: 4px; border-top-right-radius: 4px; border: 1.5px solid #f59e0b; padding: 1px;"></i>
-                                        <span>مستطيل علوي دائري</span>
-                                    </button>
-                                    <button type="button" onclick="addSketchShape('circle')" class="flex items-center justify-start p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition text-[11px] gap-2 font-medium" title="إضافة دائرة">
-                                        <i class="far fa-circle text-amber-500 text-sm"></i>
-                                        <span>دائرة</span>
-                                    </button>
-                                    <button type="button" onclick="addSketchShape('ellipse')" class="flex items-center justify-start p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition text-[11px] gap-2 font-medium" title="إضافة شكل بيضاوي">
-                                        <i class="fas fa-ellipsis-h text-amber-500 text-sm"></i>
-                                        <span>بيضاوي</span>
-                                    </button>
-                                    <button type="button" onclick="addSketchShape('triangle')" class="flex items-center justify-start p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition text-[11px] gap-2 font-medium" title="إضافة مثلث">
-                                        <i class="fas fa-caret-up text-amber-500 text-sm"></i>
-                                        <span>مثلث</span>
-                                    </button>
-                                    <button type="button" onclick="addSketchShape('hexagon')" class="flex items-center justify-start p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition text-[11px] gap-2 font-medium" title="إضافة شكل سداسي">
-                                        <i class="fas fa-draw-polygon text-amber-500 text-sm"></i>
-                                        <span>سداسي</span>
-                                    </button>
-                                    <button type="button" onclick="addSketchShape('star')" class="flex items-center justify-start p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition text-[11px] gap-2 font-medium" title="إضافة نجمة">
-                                        <i class="far fa-star text-amber-500 text-sm"></i>
-                                        <span>نجمة</span>
-                                    </button>
-                                    <button type="button" onclick="addSketchShape('arrow-right')" class="flex items-center justify-start p-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition text-[11px] gap-2 font-medium" title="إضافة سهم">
-                                        <i class="fas fa-arrow-right text-amber-500 text-sm"></i>
-                                        <span>سهم</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 class="font-bold text-sm text-gray-700 mb-3 border-b pb-1">لوحة الألوان</h4>
-                                <div class="flex justify-between gap-1.5" id="sketch-colors">
-                                    <button type="button" onclick="setSketchColor('#000000')" class="w-8 h-8 rounded-full border-2 border-white ring-2 ring-amber-500 bg-black cursor-pointer" data-color="#000000"></button>
-                                    <button type="button" onclick="setSketchColor('#ef4444')" class="w-8 h-8 rounded-full border-2 border-white ring-1 ring-gray-300 bg-red-500 cursor-pointer" data-color="#ef4444"></button>
-                                    <button type="button" onclick="setSketchColor('#3b82f6')" class="w-8 h-8 rounded-full border-2 border-white ring-1 ring-gray-300 bg-blue-500 cursor-pointer" data-color="#3b82f6"></button>
-                                    <button type="button" onclick="setSketchColor('#10b981')" class="w-8 h-8 rounded-full border-2 border-white ring-1 ring-gray-300 bg-green-500 cursor-pointer" data-color="#10b981"></button>
-                                    <button type="button" onclick="setSketchColor('#f59e0b')" class="w-8 h-8 rounded-full border-2 border-white ring-1 ring-gray-300 bg-amber-500 cursor-pointer" data-color="#f59e0b"></button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 class="font-bold text-sm text-gray-700 mb-3 border-b pb-1">خيارات العرض والمظهر</h4>
-                                <div class="flex flex-col gap-2 text-xs">
-                                    <label class="flex items-center gap-2 cursor-pointer py-1">
-                                        <input type="checkbox" id="sketch-grid-toggle" checked onchange="toggleSketchGrid()" class="form-checkbox h-4 w-4 text-amber-500 rounded">
-                                        <span>إظهار شبكة المربعات</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 cursor-pointer py-1">
-                                        <input type="checkbox" id="sketch-bw-toggle" onchange="toggleSketchBW()" class="form-checkbox h-4 w-4 text-amber-500 rounded">
-                                        <span>أبيض وأسود (مونوكروم)</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 class="font-bold text-sm text-gray-700 mb-3 border-b pb-1">صورة الخلفية المرجعية</h4>
-                                <div class="flex flex-col gap-2">
-                                    <input type="file" id="sketch-image-upload" onchange="handleSketchImageUpload(event)" accept="image/*" class="hidden">
-                                    <button type="button" onclick="document.getElementById('sketch-image-upload').click()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5">
-                                        <i class="fas fa-image"></i>
-                                        <span>تحميل صورة مرجعية</span>
-                                    </button>
-                                    <div id="sketch-opacity-container" class="hidden">
-                                        <label class="block text-[10px] text-gray-500 mb-1">شفافية الصورة:</label>
-                                        <input type="range" id="sketch-image-opacity" min="0.1" max="1" step="0.1" value="0.5" oninput="changeSketchImageOpacity(this.value)" class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-500">
-                                    </div>
-                                    <button type="button" id="sketch-remove-image-btn" onclick="removeSketchBackgroundImage()" class="hidden w-full bg-red-100 hover:bg-red-200 text-red-700 font-bold py-1 px-3 rounded-lg text-[10px] transition">
-                                        إزالة الصورة الخلفية
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Right Panel: Canvas Area -->
-                        <div class="flex-1 bg-gray-100 p-4 rounded-xl border border-gray-300 flex flex-col items-center justify-start relative overflow-hidden" style="min-height: 500px;">
-                            <!-- Context element control bar -->
-                            <div id="sketch-element-controls" class="hidden mb-3 flex flex-wrap items-center gap-3 bg-white p-2 rounded-xl border shadow-sm w-full justify-center">
-                                <span class="text-xs text-gray-500">العنصر المحدد:</span>
-                                <button type="button" onclick="rotateSelectedSketchElement()" class="text-blue-600 hover:text-blue-800 text-xs font-bold px-2 py-1 bg-blue-50 rounded" title="تدوير بـ 15 درجة"><i class="fas fa-redo ml-1"></i> تدوير</button>
-                                <button type="button" onclick="duplicateSelectedSketchElement()" class="text-green-600 hover:text-green-800 text-xs font-bold px-2 py-1 bg-green-50 rounded" title="تكرار العنصر"><i class="fas fa-copy ml-1"></i> تكرار</button>
-                                <button type="button" onclick="deleteSelectedSketchElement()" class="text-red-600 hover:text-red-800 text-xs font-bold px-2 py-1 bg-red-50 rounded" title="حذف العنصر"><i class="fas fa-trash ml-1"></i> حذف</button>
-                                <div id="sketch-text-edit-container" class="hidden flex items-center gap-1">
-                                    <input type="text" id="sketch-element-text-input" oninput="updateSelectedSketchElementText(this.value)" class="p-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-amber-500 text-right w-32" placeholder="تغيير القياس/النص">
-                                </div>
-                            </div>
-
-                            <!-- Canvas Wrapper for scroll/zoom if necessary -->
-                            <div class="w-full overflow-auto flex justify-center py-2" id="canvas-scroll-container">
-                                <div class="relative bg-white border border-gray-400 rounded shadow-md" style="width: 800px; height: 600px;">
-                                    <canvas id="sketch-canvas" width="800" height="600" class="absolute top-0 left-0 bg-transparent cursor-crosshair"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Users View (Admin Only) -->
             <div id="users-view" class="view hidden">
                 <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">إدارة المستخدمين</h2>
@@ -1065,7 +851,7 @@
                         <h3 class="text-2xl font-bold text-gray-800">طباعة الفاتورة</h3>
                         <div class="space-x-2 space-x-reverse">
                             <button onclick="downloadInvoicePDF()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-xl shadow-md transition duration-150">
-                                <i class="fas fa-file-pdf ml-2"></i> طباعة الكروكي
+                                <i class="fas fa-file-pdf ml-2"></i> تحميل PDF A4
                             </button>
                             <button type="button" onclick="closeModal('printable-invoice-modal')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إغلاق</button>
                         </div>
@@ -1141,55 +927,6 @@
 
                         <div class="text-center text-xs mt-10 border-t pt-4">
                             <p>شكراً لثقتكم بنا. يسعدنا دائماً خدمتكم.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Printable Sketch Modal -->
-            <div id="printable-sketch-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center p-4 z-50 print:bg-white print:p-0" onclick="closeModal('printable-sketch-modal')">
-                <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-4xl modal-content-custom print:shadow-none print:p-0" onclick="event.stopPropagation()">
-                    <div class="flex justify-between items-center mb-4 no-print">
-                        <h3 class="text-2xl font-bold text-gray-800">طباعة الكروكي</h3>
-                        <div class="space-x-2 space-x-reverse">
-                            <button onclick="window.print()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-xl shadow-md transition duration-150">
-                                <i class="fas fa-file-pdf ml-2"></i> تحميل PDF A4
-                            </button>
-                            <button type="button" onclick="closeModal('printable-sketch-modal')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إغلاق</button>
-                        </div>
-                    </div>
-                    
-                    <div id="sketch-print-content" class="bg-white p-6 border border-gray-300" style="direction: rtl; font-family: 'Cairo', sans-serif;">
-                        <!-- Header -->
-                        <div class="flex justify-between items-center border-b-2 border-black pb-4 mb-6">
-                            <div class="flex items-center">
-                                <img src="logo.png" alt="Logo" class="h-20 ml-4">
-                                <div class="text-right">
-                                    <h1 class="text-2xl font-extrabold text-black font-bold">MEUBLE ART DESIGN</h1>
-                                    
-                                    <p class="text-xs text-gray-600">الهاتف: 0640442778</p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <h2 class="text-3xl font-black text-black mb-1 font-bold">تصميم كروكي</h2>
-                                <p class="text-sm text-black"><strong>التاريخ:</strong> <span id="print-sketch-date"></span></p>
-                            </div>
-                        </div>
-
-                        <!-- Customer Info -->
-                        <div class="mb-6 grid grid-cols-3 gap-4 border p-3 rounded bg-gray-50">
-                            <div><strong>اسم الزبون:</strong> <span id="print-sketch-owner"></span></div>
-                            <div><strong>الهاتف:</strong> <span id="print-sketch-phone" style="direction: ltr; display: inline-block;"></span></div>
-                            <div><strong>رقم الفاتورة:</strong> <span id="print-sketch-invoice"></span></div>
-                        </div>
-
-                        <!-- Canvas Image Rendering -->
-                        <div class="flex justify-center border p-2 bg-white rounded mb-6">
-                            <img id="print-sketch-image" class="max-w-full h-auto object-contain border print:max-h-none print:w-full" style="max-height: 750px;" alt="Sketch Design">
-                        </div>
-
-                        <div class="text-center text-xs mt-6 border-t pt-4 text-gray-500">
-                            <p>MEUBLE ART DESIGN</p>
                         </div>
                     </div>
                 </div>
