@@ -196,8 +196,8 @@ input[type="number"], input[type="text"], input[type="tel"], textarea {
         display: none !important;
     }
     
-    /* إخفاء جميع الواجهات والنوافذ داخل محتوى التطبيق عدا نافذة الفاتورة والكروكي */
-    #main-content > *:not(#printable-invoice-modal):not(#printable-sketch-modal) {
+    /* إخفاء جميع الواجهات والنوافذ داخل محتوى التطبيق عدا نافذة الفاتورة */
+    #main-content > *:not(#printable-invoice-modal) {
         display: none !important;
     }
     
@@ -212,8 +212,8 @@ input[type="number"], input[type="text"], input[type="tel"], textarea {
         background-color: white !important;
     }
     
-    /* جعل نوافذ الطباعة تأخذ كامل الصفحة وتظهر بشكل صحيح */
-    #printable-invoice-modal, #printable-sketch-modal {
+    /* جعل نافذة الفاتورة تأخذ كامل الصفحة وتظهر بشكل صحيح */
+    #printable-invoice-modal {
         display: block !important;
         visibility: visible !important;
         position: absolute !important;
@@ -229,7 +229,7 @@ input[type="number"], input[type="text"], input[type="tel"], textarea {
         padding: 0 !important;
     }
     
-    #printable-invoice-modal .modal-content-custom, #printable-sketch-modal .modal-content-custom {
+    #printable-invoice-modal .modal-content-custom {
         box-shadow: none !important;
         transform: none !important;
         width: 100% !important;
@@ -238,14 +238,6 @@ input[type="number"], input[type="text"], input[type="tel"], textarea {
         margin: 0 !important;
         background-color: white !important;
         border: none !important;
-    }
-
-    #print-sketch-image {
-        max-height: 17.5cm !important;
-        width: auto !important;
-        display: block !important;
-        margin: 0 auto !important;
-        object-fit: contain !important;
     }
     
     @page {
@@ -376,20 +368,8 @@ a, button, select, input, i, .confirmation-buttons {
     justify-content: center;
     top: 12px;
     right: 12px;
-    transition: right 0.3s ease-in-out, background-color 0.15s ease;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     padding: 0 !important;
-}
-@media (min-width: 768px) {
-    #sidebar-toggle {
-        right: 268px; /* Default expanded position on desktop/tablet */
-    }
-}
-#sidebar-toggle.collapsed {
-    right: 12px !important;
-}
-#sidebar-toggle.expanded {
-    right: 268px !important;
 }
 
 /* إضافة تباعد لكي لا يتم تغطية المحتوى بالزر الدائري الجديد وكذلك شريط التنقل السفلي */
@@ -802,43 +782,4 @@ a, button, select, input, i, .confirmation-buttons {
 #external-worker-form:not(.hidden), 
 #user-form:not(.hidden) {
     display: flex !important;
-}
-
-/* ====================================================================
-   أنماط لوحة رسم الكروكي (Sketch Editor Custom Styles)
-   ==================================================================== */
-#canvas-scroll-container::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-#canvas-scroll-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
-#canvas-scroll-container::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-}
-#canvas-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-.sketch-color-active {
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4);
-    transform: scale(1.1);
-}
-@media (max-width: 1024px) {
-    #sketch-editor-container {
-        padding: 1rem !important;
-    }
-    #canvas-scroll-container {
-        max-width: 100%;
-        overflow-x: auto;
-        justify-content: flex-start;
-    }
-}
-
-#sketch-canvas {
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
 }
