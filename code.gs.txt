@@ -16,7 +16,6 @@ const SHEETS = {
   ELECTRICITY_BILLS: 'ElectricityBills',
   EXTERNAL_WORKERS: 'ExternalWorkers',
   USERS: 'Users',
-  SKETCHES: 'Sketches',
 };
 
 // ====================================================================
@@ -731,26 +730,19 @@ function getWhatsAppLink(params) {
   
   var cleanPhone = String(phone).replace(/\D/g, '');
   
-  if (cleanPhone.indexOf('00') === 0) {
-      cleanPhone = cleanPhone.substring(2);
-  }
-  if (cleanPhone.indexOf('0') === 0) {
+  if (!cleanPhone.startsWith('212') && !cleanPhone.startsWith('0')) {
+      cleanPhone = '212' + cleanPhone;
+  } else if (cleanPhone.startsWith('0')) {
       cleanPhone = '212' + cleanPhone.substring(1);
   }
-  if (cleanPhone.indexOf('2120') === 0) {
-      cleanPhone = '212' + cleanPhone.substring(4);
-  }
-  if (cleanPhone.indexOf('212') !== 0) {
-      cleanPhone = '212' + cleanPhone;
-  }
 
-  var message = encodeURIComponent(
-    'MEUBLE ART DESIGN\n' +
-    'مرحباً ' + customerName + ' 👋\n' +
-    'نذكّركم بوجود مبلغ متبقي على فاتورتكم رقم #' + invoiceNo + ' 💳\n' +
-    remainingAmount + ' DH\n' +
-    'شكراً لتعاونكم 🤝'
-  );
+var message = encodeURIComponent(
+  'MEUBLE ART DESIGN\n' +
+  'مرحباً ' + customerName + ' 👋\n' +
+  'نذكّركم بوجود مبلغ متبقي على فاتورتكم 💳\n' +
+  remainingAmount + ' DH\n' +
+  'شكراً لتعاونكم 🤝'
+);
   
   var waLink = 'https://wa.me/' + cleanPhone + '?text=' + message;
 
@@ -1927,101 +1919,6 @@ function calculateCurrentMonthDebtForShop(shopId, targetYear, targetMonth) {
 // ====================================================================
 // وظيفة استقبال ومعالجة طلبات واجهة برمجة التطبيقات (API doPost)
 // ====================================================================
-// ====================================================================
-// وظائف تصميم الكروكي (Sketches)
-// ====================================================================
-
-function checkSketchesSheet() {
-  const sheetName = SHEETS.SKETCHES;
-  let sheet = SS.getSheetByName(sheetName);
-  if (!sheet) {
-    sheet = SS.insertSheet(sheetName);
-    sheet.appendRow(['SketchID', 'Date', 'OwnerName', 'Phone', 'InvoiceNo', 'Elements', 'BgImage', 'BgOpacity', 'ShowGrid', 'IsBW', 'Color']);
-  } else if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['SketchID', 'Date', 'OwnerName', 'Phone', 'InvoiceNo', 'Elements', 'BgImage', 'BgOpacity', 'ShowGrid', 'IsBW', 'Color']);
-  }
-  return sheet;
-}
-
-function getSketches() {
-  try {
-    checkSketchesSheet();
-    const data = getData(SHEETS.SKETCHES);
-    if (data.error) return { error: data.error };
-    
-    return data.map(function(row) {
-      let elements = [];
-      try {
-        elements = row.Elements ? JSON.parse(row.Elements) : [];
-      } catch (e) {
-        console.error('Error parsing Elements JSON: ', e.message);
-      }
-      return {
-        id: String(row.SketchID),
-        date: row.Date,
-        ownerName: row.OwnerName,
-        phone: String(row.Phone),
-        invoiceNo: String(row.InvoiceNo),
-        elements: elements,
-        bgImage: row.BgImage || null,
-        bgOpacity: parseFloat(row.BgOpacity) || 0.5,
-        showGrid: row.ShowGrid === 'TRUE' || row.ShowGrid === true,
-        isBW: row.IsBW === 'TRUE' || row.IsBW === true,
-        color: row.Color || '#000000'
-      };
-    });
-  } catch (e) {
-    return { error: e.message };
-  }
-}
-
-function saveSketch(sketchObject) {
-  try {
-    checkSketchesSheet();
-    const id = sketchObject.id;
-    const rowIndex = findRowByValue(SHEETS.SKETCHES, 'SketchID', id);
-    
-    const rowData = {
-      SketchID: String(id),
-      Date: sketchObject.date,
-      OwnerName: sketchObject.ownerName,
-      Phone: String(sketchObject.phone),
-      InvoiceNo: String(sketchObject.invoiceNo),
-      Elements: JSON.stringify(sketchObject.elements),
-      BgImage: sketchObject.bgImage || '',
-      BgOpacity: String(sketchObject.bgOpacity),
-      ShowGrid: sketchObject.showGrid ? 'TRUE' : 'FALSE',
-      IsBW: sketchObject.isBW ? 'TRUE' : 'FALSE',
-      Color: sketchObject.color || '#000000'
-    };
-    
-    if (rowIndex) {
-      updateRow(SHEETS.SKETCHES, rowIndex, rowData);
-    } else {
-      appendRow(SHEETS.SKETCHES, rowData);
-    }
-    return { success: true };
-  } catch (e) {
-    return { error: e.message };
-  }
-}
-
-function deleteSketchServer(sketchId) {
-  try {
-    checkSketchesSheet();
-    const rowIndex = findRowByValue(SHEETS.SKETCHES, 'SketchID', sketchId);
-    if (rowIndex) {
-      const sheet = getSheet(SHEETS.SKETCHES);
-      sheet.deleteRow(rowIndex);
-      return { success: true };
-    }
-    return { success: false, error: 'التصميم غير موجود على السيرفر.' };
-  } catch (e) {
-    return { error: e.message };
-  }
-}
-
-
 function doPost(e) {
   try {
     const requestData = JSON.parse(e.postData.contents);
