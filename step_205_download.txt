@@ -1,1 +1,0 @@
-I will update `index.html` to relocate the action buttons and control bar to the top of the editor and canvas panel respectively.
