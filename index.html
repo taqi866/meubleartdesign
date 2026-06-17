@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEUBLE ART DESIGN - إدارة المداخيل والنفقات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- PWA & iOS Home Screen Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MEUBLE ART DESIGN">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="theme-color" content="#f59e0b">
+</head>
+<body class="text-right">
+
+    <!-- Login View -->
+    <div id="login-view" class="flex items-center justify-center h-screen bg-white">
+        <div class="bg-white p-8 rounded-xl w-full max-w-sm border border-gray-300">
+            <div class="flex flex-col items-center justify-center mb-6">
+                <img src="logo.png" alt="MEUBLE ART DESIGN Logo" class="h-20 mr-2"/>
+                <h1 class="text-3xl font-bold text-gray-900 mt-4">تسجيل الدخول</h1>
+            </div>
+
+            <div id="alert-container-login" class="mb-4 hidden">
+                <div id="alert-box-login" class="p-3 rounded-xl shadow-sm text-sm font-medium text-center" style="direction: rtl;"></div>
+            </div>
+
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label for="username" class="block text-sm font-medium text-gray-700">اسم المستخدم</label>
+                    <input type="text" id="username" required class="input-field" placeholder="أدخل اسم المستخدم">
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="block text-sm font-medium text-gray-700">كلمة المرور</label>
+                    <div class="password-container">
+                        <input type="password" id="password" required class="input-field pr-10" placeholder="أدخل كلمة المرور">
+                        <i id="togglePassword" class="fa fa-eye toggle-password" onclick="togglePasswordVisibility()"></i>
+                    </div>
+                </div>
+
+                <button type="submit" id="login-submit-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition duration-150 flex items-center justify-center">
+                    <span>تسجيل الدخول</span>
+                </button>
+                <div class="text-center mt-4">
+                    <a href="#" onclick="showConfirmationModal(event)" class="text-sm text-gray-500 hover:text-amber-600">نسيت كلمة المرور؟</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal for Forgot Password -->
+    <div id="confirmation-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md modal-content-custom" onclick="event.stopPropagation()">
+            <h3 class="text-xl font-bold mb-4">طلب استعادة كلمة المرور</h3>
+            <p class="text-gray-700 mb-4">
+                يرجى إدخال بريدك الإلكتروني المسجل. سيتم إرسال كلمة المرور الحالية إلى بريد المسؤول للمراجعة.
+            </p>
+            <div class="mb-6">
+                <label for="recovery-email" class="block text-sm font-medium text-gray-700">بريدك الإلكتروني</label>
+                <input type="email" id="recovery-email" required class="input-field" placeholder="example@domain.com">
+            </div>
+
+            <div class="flex justify-end space-x-4 space-x-reverse">
+                <button onclick="closeModal('confirmation-modal')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                <button onclick="handleForgotPassword(event)" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl">تأكيد الإرسال</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Generic Confirmation Modal (Modern) -->
+    <div id="custom-confirm-modal" class="fixed inset-0 hidden items-center justify-center p-4 z-[60] confirmation-modal-overlay">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md confirmation-modal-content text-center" onclick="event.stopPropagation()">
+            <div id="confirm-icon-container" class="confirmation-icon">
+                <!-- Icon injected via JS -->
+            </div>
+            <h3 id="confirm-title" class="confirmation-title"></h3>
+            <p id="confirm-message" class="confirmation-message"></p>
+            <div class="confirmation-buttons">
+                <button id="confirm-btn-yes" class="confirm-btn yes">نعم، تأكيد</button>
+                <button onclick="closeModal('custom-confirm-modal')" class="confirm-btn no">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Worker Payments List Modal -->
+    <div id="worker-payments-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center p-4 z-50" onclick="closeModal('worker-payments-modal')">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-3xl" onclick="event.stopPropagation()">
+            <h3 id="worker-payments-modal-title" class="text-2xl font-bold mb-4 border-b pb-2">سجل دفعات العامل</h3>
+            <div class="table-responsive max-h-[60vh] overflow-y-auto">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered">
+                    <thead class="bg-gray-50 border-b border-gray-300 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">تاريخ الدفع</th>
+                            <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">المبلغ</th>
+                            <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">ملاحظات</th>
+                            <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="worker-payments-table-body" class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button type="button" onclick="closeModal('worker-payments-modal')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Container -->
+    <div id="main-app" class="hidden flex h-screen">
+
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar fixed top-0 right-0 h-full w-64 bg-white shadow-xl p-4 transform translate-x-full md:translate-x-0 md:relative md:shadow-none md:flex-shrink-0">
+            <div class="flex flex-col items-center justify-center mb-6">
+                <img src="logo.png" alt="MEUBLE ART DESIGN Logo" class="h-20 mr-2"/>
+                <button onclick="manualSync(event)" class="mt-4 flex items-center text-sm text-amber-600 hover:text-amber-700 transition font-bold no-print" title="تحديث البيانات">
+                    <i class="fas fa-sync-alt ml-2"></i> تحديث البيانات
+                </button>
+            </div>
+
+            <nav>
+                <a id="nav-dashboard" href="#" onclick="showView('dashboard')" class="flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-amber-100 text-gray-700">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    <span class="mr-2">لوحة التحكم</span>
+                </a>
+
+                <a id="nav-invoices" href="#" onclick="showView('invoices')" class="flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-amber-100 text-gray-700">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M9 11h.01M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"></path></svg>
+                    <span class="mr-2">المداخيل (الفواتير)</span>
+                </a>
+                <a id="nav-workers" href="#" onclick="showView('workers')" class="flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-amber-100 text-gray-700">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h-4v-4m0 0v-4m0 4h-4m4 0h4m-9-3a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <span class="mr-2">مصاريف العمال (الرواتب)</span>
+                </a>
+                <a id="nav-external-workers" href="#" onclick="showView('external-workers')" class="flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-amber-100 text-gray-700">
+                    <i class="fas fa-users-cog h-5 w-5"></i>
+                    <span class="mr-2">مصاريف عمال خارجيين</span>
+                </a>
+                <a id="nav-transport" href="#" onclick="showView('transport')" class="flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-amber-100 text-gray-700">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14v6m-3-6h6m-6 0h-2M13 14h-2m2 0V9m-3 3h4m0 0h4m-8 0V7m-4 3h4m0 0H8m-2 3h4m0 0V7m-4 3h4M3 6h18M3 18h18M5 12h14"></path></svg>
+                    <span class="mr-2">مصاريف النقل</span>
+                </a>
+                <a id="nav-shops" href="#" onclick="showView('shops')" class="flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-amber-100 text-gray-700">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7a2 2 0 012-2m0 0v-5a2 2 0 012-2h4l2 2h4a2 2 0 012 2v5"></path></svg>
+                    <span class="mr-2">مصاريف المحلات (الإيجارات)</span>
+                </a>
+                <a id="nav-electricity" href="#" onclick="showView('electricity')" class="flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-amber-100 text-gray-700">
+                    <i class="fas fa-bolt h-5 w-5"></i>
+                    <span class="mr-2">مصاريف الكهرباء</span>
+                </a>
+                <a id="nav-profit-loss" href="#" onclick="showView('profit-loss')" class="flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-amber-100 text-gray-700">
+                    <i class="fas fa-chart-line h-5 w-5"></i>
+                    <span class="mr-2">قائمة الدخل (الربح والخسارة)</span>
+                </a>
+                <a id="nav-users" href="#" onclick="showView('users')" class="flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-amber-100 text-gray-700">
+                    <i class="fas fa-user-shield h-5 w-5"></i>
+                    <span class="mr-2">إدارة المستخدمين</span>
+                </a>
+                <a id="nav-change-password" href="#" onclick="openChangePasswordModal()" class="flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-amber-100 text-gray-700">
+                    <i class="fas fa-key h-5 w-5"></i>
+                    <span class="mr-2">تغيير كلمة المرور</span>
+                </a>
+
+                <button onclick="handleLogout()" class="w-full flex items-center space-x-2 space-x-reverse py-2.5 px-4 rounded-lg transition duration-200 hover:bg-red-100 text-red-600 mt-6">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3v-4a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <span class="mr-2">تسجيل الخروج</span>
+                </button>
+            </nav>
+        </div>
+        
+        <button id="sidebar-toggle" class="md:hidden p-4 fixed top-0 right-0 z-30 bg-amber-500 text-white rounded-bl-lg shadow-lg">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+        </button>
+
+        <!-- Main Content Area -->
+        <div id="main-content" class="flex-1 overflow-y-auto p-4 md:p-8 main-content">
+            <div id="alert-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 w-full max-w-sm hidden">
+                <div id="alert-box" class="p-3 rounded-xl shadow-lg text-sm font-medium text-center" style="direction: rtl;"></div>
+            </div>
+
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="view">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">لوحة التحكم الرئيسية</h2>
+                <div id="dashboard-stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                    <!-- Dashboard stats are rendered here -->
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+                        <h3 class="text-xl font-semibold mb-4 text-purple-600">آخر الدفعات المسجلة (مدمجة)</h3>
+                        <div id="latest-payments-list" class="space-y-3">
+                            <p class="text-gray-500">جاري التحميل...</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+                        <h3 class="text-xl font-semibold mb-4 text-red-600">الزبائن ذوي المبالغ المتبقية (أعلى 5)</h3>
+                        <div id="overdue-list" class="space-y-3">
+                            <p class="text-gray-500">جاري التحميل...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 text-amber-700">آخر 5 فواتير</h3>
+                    <div id="latest-invoices-list" class="space-y-3">
+                        <p class="text-gray-500">جاري التحميل...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Users View (Admin Only) -->
+            <div id="users-view" class="view hidden">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">إدارة المستخدمين</h2>
+                
+                <button onclick="showForm('user-form')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition duration-150 mb-4">
+                    + إضافة مستخدم جديد
+                </button>
+
+                <div id="user-form" class="hidden" onclick="hideForm('user-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="user-form-title" class="text-xl font-semibold mb-4 border-b pb-2">نموذج إضافة مستخدم</h3>
+                        <form id="add-user-form" onsubmit="handleUserSubmit(event)">
+                            <input type="hidden" id="EditUsername_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">اسم المستخدم</label><input type="text" id="User_Username" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">كلمة المرور</label><input type="password" id="User_Password" required class="input-field"></div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">نوع الحساب (الصلاحية)</label>
+                                    <select id="User_Role" required class="input-field">
+                                        <option value="admin">مسؤول (Admin)</option>
+                                        <option value="user">مستخدم عادي (User - فواتير فقط)</option>
+                                    </select>
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">البريد الإلكتروني (للاستعادة)</label><input type="email" id="User_Email" required class="input-field"></div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="user-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ المستخدم</button>
+                                <button type="button" onclick="hideForm('user-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">المستخدمون الحاليون</h3>
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered">
+                            <thead class="bg-gray-50 border-b border-gray-300">
+                                <tr>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">اسم المستخدم</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">البريد الإلكتروني</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الصلاحية</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body" class="bg-white divide-y divide-gray-200">
+                                <tr><td colspan="4" class="text-center py-4 text-gray-500 border border-gray-300">جاري تحميل المستخدمين...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profit/Loss View -->
+            <div id="profit-loss-view" class="view hidden">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">قائمة الدخل (الربح والخسارة)</h2>
+                
+                <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-amber-700">تصفية حسب الفترة</h3>
+                    <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 md:space-x-reverse">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">السنة</label>
+                            <select id="pl-filter-year" onchange="fetchProfitLossData()" class="input-field"></select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">الشهر</label>
+                            <select id="pl-filter-month" onchange="fetchProfitLossData()" class="input-field">
+                                <option value="">كل الأشهر</option>
+                                <option value="1">يناير</option>
+                                <option value="2">فبراير</option>
+                                <option value="3">مارس</option>
+                                <option value="4">أبريل</option>
+                                <option value="5">مايو</option>
+                                <option value="6">يونيو</option>
+                                <option value="7">يوليو</option>
+                                <option value="8">أغسطس</option>
+                                <option value="9">سبتمبر</option>
+                                <option value="10">أكتوبر</option>
+                                <option value="11">نوفمبر</option>
+                                <option value="12">ديسمبر</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="clearProfitLossFilters()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition duration-150">إعادة تعيين</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="profit-loss-stats" class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+                    <!-- Stat cards will be rendered here -->
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">تفاصيل قائمة الدخل للفترة المحددة</h3>
+                    <div id="pl-details-table" class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered">
+                            <tbody id="pl-table-body" class="bg-white divide-y divide-gray-200">
+                                <tr><td colspan="3" class="text-center py-4 text-gray-500 border border-gray-300">جاري تحميل البيانات...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoices View -->
+            <div id="invoices-view" class="view hidden">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">إدارة المداخيل (الفواتير)</h2>
+                <button onclick="showForm('invoice-form-new')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition duration-150 mb-4">
+                    + إضافة فاتورة جديدة
+                </button>
+
+                <div id="invoice-form" class="hidden" onclick="hideForm('invoice-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="invoice-form-title" class="text-xl font-semibold mb-4 border-b pb-2">نموذج إضافة فاتورة</h3>
+                        <form id="add-invoice-form" onsubmit="handleInvoiceSubmit(event)">
+                            <input type="hidden" id="InvoiceID_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">رقم الفاتورة (InvoiceNo)</label><input type="text" id="InvoiceNo" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">اسم الزبون</label><input type="text" id="CustomerName" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">هاتف الزبون</label><input type="tel" id="CustomerPhone" required class="input-field"></div>
+                                
+                                <div><label class="block text-sm font-medium text-gray-700">التاريخ</label><input type="date" id="Date" value="" required class="input-field"></div>
+                                
+                                <div><label class="block text-sm font-medium text-gray-700">المجموع (TotalAmount)</label><input type="number" id="TotalAmount" step="0.01" required class="input-field"></div>
+                                
+                                <div id="initial-paid-container"><label class="block text-sm font-medium text-gray-700">المبلغ المدفوع مبدئياً</label><input type="number" id="InitialPaidAmount" step="0.01" value="0" class="input-field"></div>
+                                
+                                <div><label class="block text-sm font-medium text-gray-700">تكلفة البضاعة (Cost) - اختياري</label><input type="number" id="Cost" step="0.01" class="input-field"></div>
+                                
+                                <div class="md:col-span-3"><label class="block text-sm font-medium text-gray-700">وصف البضاعة</label><textarea id="ItemDescription" rows="2" class="input-field"></textarea></div>
+                                <div class="md:col-span-3"><label class="block text-sm font-medium text-gray-700">ملاحظات</label><textarea id="Notes" rows="2" class="input-field"></textarea></div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="invoice-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ الفاتورة</button>
+                                <button type="button" onclick="hideForm('invoice-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div id="invoice-summary-stats" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex flex-col md:flex-row justify-between mb-4">
+                        <input type="text" id="invoice-search" oninput="fetchInvoices()" class="p-2 border border-gray-400 rounded-lg w-full md:w-1/3 mb-4 md:mb-0 focus:ring-amber-500 focus:border-amber-500" placeholder="بحث برقم الفاتورة أو اسم الزبون...">
+                        
+                        <div class="flex flex-wrap gap-2">
+                             <select id="invoice-filter-year" onchange="fetchInvoices()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500"></select>
+                             <select id="invoice-filter-month" onchange="fetchInvoices()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500">
+                                 <option value="">كل الأشهر</option>
+                                 <option value="1">1</option>
+                                 <option value="2">2</option>
+                                 <option value="3">3</option>
+                                 <option value="4">4</option>
+                                 <option value="5">5</option>
+                                 <option value="6">6</option>
+                                 <option value="7">7</option>
+                                 <option value="8">8</option>
+                                 <option value="9">9</option>
+                                 <option value="10">10</option>
+                                 <option value="11">11</option>
+                                 <option value="12">12</option>
+                             </select>
+                             <select id="invoice-filter-status" onchange="fetchInvoices()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500">
+                                 <option value="">الكل</option>
+                                 <option value="Unpaid">غير مدفوعة</option>
+                                 <option value="Partial">مدفوعة جزئياً</option>
+                                 <option value="Paid">مدفوعة بالكامل</option>
+                             </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered">
+                            <thead class="bg-gray-50 border-b border-gray-300">
+                                <tr>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">رقم الفاتورة</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الزبون</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">التاريخ</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">المجموع</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الباقي</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الحالة</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">حالة المصادقة</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoices-table-body" class="bg-white divide-y divide-gray-200">
+                                <tr><td colspan="8" class="text-center py-4 text-gray-500 border border-gray-300">جاري تحميل الفواتير...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Workers View -->
+            <div id="workers-view" class="view hidden">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">إدارة مصاريف العمال (الرواتب)</h2>
+                <button onclick="showForm('worker-form-new')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition duration-150 mb-4">
+                    + إضافة عامل جديد
+                </button>
+
+                <div id="worker-form" class="hidden" onclick="hideForm('worker-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="worker-form-title" class="text-xl font-semibold mb-4 border-b pb-2">نموذج إضافة عامل</h3>
+                        <form id="add-worker-form" onsubmit="handleWorkerSubmit(event)">
+                            <input type="hidden" id="WorkerID_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">الاسم</label><input type="text" id="WorkerName" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">الهاتف</label><input type="tel" id="WorkerPhone" class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">الراتب الشهري</label><input type="number" id="MonthlySalary" step="0.01" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">تاريخ البدء</label><input type="date" id="StartDate" value="" required class="input-field"></div>
+                                 <div>
+                                     <label class="block text-sm font-medium text-gray-700">حالة العامل</label>
+                                     <select id="WorkerIsActive" required class="input-field">
+                                         <option value="TRUE">نشط</option>
+                                         <option value="FALSE">غير نشط</option>
+                                     </select>
+                                 </div>
+                                <div class="md:col-span-3"><label class="block text-sm font-medium text-gray-700">ملاحظات</label><textarea id="WorkerNotes" rows="2" class="input-field"></textarea></div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="worker-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ العامل</button>
+                                <button type="button" onclick="hideForm('worker-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                         <input type="text" id="worker-search" oninput="fetchWorkers()" class="p-2 border border-gray-400 rounded-lg w-full md:w-1/3 focus:ring-amber-500 focus:border-amber-500" placeholder="بحث باسم العامل...">
+
+                         <div class="flex flex-wrap gap-2">
+                             <select id="worker-filter-year" onchange="fetchWorkers()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500"></select>
+                             <select id="worker-filter-month" onchange="fetchWorkers()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500">
+                                 <option value="">كل الأشهر</option>
+                                 <option value="1">1</option>
+                                 <option value="2">2</option>
+                                 <option value="3">3</option>
+                                 <option value="4">4</option>
+                                 <option value="5">5</option>
+                                 <option value="6">6</option>
+                                 <option value="7">7</option>
+                                 <option value="8">8</option>
+                                 <option value="9">9</option>
+                                 <option value="10">10</option>
+                                 <option value="11">11</option>
+                                 <option value="12">12</option>
+                             </select>
+                         </div>
+                         <label class="flex items-center gap-2">
+                             <input type="checkbox" id="show-inactive-workers" onchange="fetchWorkers()" class="form-checkbox h-4 w-4 text-amber-600">
+                             <span class="text-sm text-gray-700">عرض العمال غير النشطين</span>
+                         </label>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-4">قائمة العمال وحالة المستحقات</h3>
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered">
+                            <thead class="bg-gray-50 border-b border-gray-300">
+                                <tr>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الاسم</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الراتب الشهري</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">إجمالي المدفوع (تراكمي)</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الباقي/الدين (لهذا الشهر)</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="workers-table-body" class="bg-white divide-y divide-gray-200">
+                                <tr><td colspan="5" class="text-center py-4 text-gray-500 border border-gray-300">جاري تحميل العمال...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- External Workers View -->
+            <div id="external-workers-view" class="view hidden">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">إدارة مصاريف العمال الخارجيين</h2>
+                <button onclick="showForm('external-worker-form')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition duration-150 mb-4">
+                    + تسجيل مصروف جديد
+                </button>
+                
+                <div id="external-worker-form" class="hidden" onclick="hideForm('external-worker-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="external-worker-form-title" class="text-xl font-semibold mb-4 border-b pb-2">تسجيل مصروف عامل خارجي</h3>
+                        <form id="add-external-worker-form" onsubmit="handleExternalWorkerSubmit(event)">
+                            <input type="hidden" id="ExternalWorkerID_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">التاريخ</label><input type="date" id="ExternalWorkerDate" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">اسم العامل</label><input type="text" id="ExternalWorkerName" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">المبلغ</label><input type="number" id="ExternalWorkerAmount" step="0.01" required class="input-field"></div>
+                                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">ملاحظات</label><textarea id="ExternalWorkerNotes" rows="2" class="input-field"></textarea></div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="external-worker-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ</button>
+                                <button type="button" onclick="hideForm('external-worker-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex flex-col md:flex-row justify-between mb-4">
+                        <input type="text" id="external-worker-search" oninput="fetchExternalWorkers()" class="p-2 border border-gray-400 rounded-lg w-full md:w-1/3 mb-4 md:mb-0" placeholder="بحث باسم العامل...">
+                        <div class="flex flex-wrap gap-2">
+                             <select id="external-worker-filter-year" onchange="fetchExternalWorkers()" class="p-2 border border-gray-400 rounded-lg"></select>
+                             <select id="external-worker-filter-month" onchange="fetchExternalWorkers()" class="p-2 border border-gray-400 rounded-lg">
+                                 <option value="">كل الأشهر</option>
+                                 <!-- Options 1-12 generated by JS -->
+                                 <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                             </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered"><thead class="bg-gray-50 border-b border-gray-300"><tr><th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">التاريخ</th><th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">اسم العامل</th><th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">المبلغ</th><th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">ملاحظات</th><th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الإجراءات</th></tr></thead><tbody id="external-workers-table-body" class="bg-white divide-y divide-gray-200"></tbody></table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transport View -->
+            <div id="transport-view" class="view hidden">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">إدارة مصاريف النقل</h2>
+                <button onclick="showForm('transport-form')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition duration-150 mb-4">
+                    + تسجيل دفعة نقل جديدة
+                </button>
+                <div id="transport-form" class="hidden" onclick="hideForm('transport-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="transport-form-title" class="text-xl font-semibold mb-4 border-b pb-2">نموذج تسجيل دفعة نقل</h3>
+                        <form id="add-transport-form" onsubmit="handleTransportSubmit(event)">
+                            <input type="hidden" id="TransportID_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">التاريخ</label><input type="date" id="TransportDate" value="" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">اسم صاحب النقل</label><input type="text" id="DriverName" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">المبلغ المدفوع</label><input type="number" id="TransportPaidAmount" step="0.01" required class="input-field"></div>
+                                
+                                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">ملاحظات</label><textarea id="TransportNotes" rows="2" class="input-field"></textarea></div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="transport-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ الدفعة</button>
+                                <button type="button" onclick="hideForm('transport-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    
+                    <div class="flex justify-end flex-wrap gap-2 mb-4">
+                             <select id="transport-filter-year" onchange="fetchTransportPayments()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500"></select>
+                             <select id="transport-filter-month" onchange="fetchTransportPayments()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500">
+                                 <option value="">كل الأشهر</option>
+                                 <option value="1">1</option>
+                                 <option value="2">2</option>
+                                 <option value="3">3</option>
+                                 <option value="4">4</option>
+                                 <option value="5">5</option>
+                                 <option value="6">6</option>
+                                 <option value="7">7</option>
+                                 <option value="8">8</option>
+                                 <option value="9">9</option>
+                                 <option value="10">10</option>
+                                 <option value="11">11</option>
+                                 <option value="12">12</option>
+                             </select>
+                    </div>
+
+                    <div id="transport-summary-stats" class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-4">
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-4">سجل دفعات النقل</h3>
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered">
+                            <thead class="bg-gray-50 border-b border-gray-300">
+                                <tr>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">التاريخ</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">اسم السائق</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">المبلغ</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">ملاحظات/الوصف</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transport-table-body" class="bg-white divide-y divide-gray-200">
+                                <tr><td colspan="4" class="text-center py-4 text-gray-500 border border-gray-300">جاري تحميل الدفعات...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shops View -->
+            <div id="shops-view" class="view hidden">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">إدارة مصاريف المحلات (الإيجارات)</h2>
+                <button onclick="showForm('shop-form-new')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition duration-150 mb-4">
+                    + إضافة محل جديد
+                </button>
+                
+                <div id="shop-form" class="hidden" onclick="hideForm('shop-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="shop-form-title" class="text-xl font-semibold mb-4 border-b pb-2">إضافة محل جديد</h3>
+                        <form id="add-shop-form" onsubmit="handleShopSubmit(event)">
+                            <input type="hidden" id="ShopID_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">اسم المحل</label><input type="text" id="ShopName" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">الإيجار الشهري</label><input type="number" id="MonthlyRent" step="0.01" required class="input-field"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">جهة الاتصال</label><input type="text" id="ShopContact" class="input-field"></div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="shop-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ المحل</button>
+                                <button type="button" onclick="hideForm('shop-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                             <input type="text" id="shop-search" oninput="fetchShops()" class="p-2 border border-gray-400 rounded-lg w-full md:w-1/3 focus:ring-amber-500 focus:border-amber-500" placeholder="بحث باسم المحل...">
+
+                             <div class="flex flex-wrap gap-2">
+                                 <select id="shop-filter-year" onchange="fetchShopPayments()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500"></select>
+                                 <select id="shop-filter-month" onchange="fetchShopPayments()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500">
+                                     <option value="">كل الأشهر</option>
+                                     <option value="1">1</option>
+                                     <option value="2">2</option>
+                                     <option value="3">3</option>
+                                     <option value="4">4</option>
+                                     <option value="5">5</option>
+                                     <option value="6">6</option>
+                                     <option value="7">7</option>
+                                     <option value="8">8</option>
+                                     <option value="9">9</option>
+                                     <option value="10">10</option>
+                                     <option value="11">11</option>
+                                     <option value="12">12</option>
+                                 </select>
+                             </div>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-4">قائمة المحلات وحالة الإيجارات المستحقة</h3>
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered">
+                            <thead class="bg-gray-50 border-b border-gray-300">
+                                <tr>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">اسم المحل</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الإيجار الشهري</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الباقي/الدين (لهذا الشهر)</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shops-table-body" class="bg-white divide-y divide-gray-200">
+                                <tr><td colspan="4" class="text-center py-4 text-gray-500 border border-gray-300">جاري تحميل المحلات...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Electricity View -->
+            <div id="electricity-view" class="view hidden">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">إدارة مصاريف الكهرباء</h2>
+                <button onclick="showForm('electricity-form')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition duration-150 mb-4">
+                    + إضافة فاتورة كهرباء جديدة
+                </button>
+
+                <div id="electricity-form" class="hidden" onclick="hideForm('electricity-form')">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto modal-content-custom text-right" onclick="event.stopPropagation()" style="direction: rtl;">
+                        <h3 id="electricity-form-title" class="text-xl font-semibold mb-4 border-b pb-2">نموذج إضافة فاتورة كهرباء</h3>
+                        <form id="add-electricity-form" onsubmit="handleElectricitySubmit(event)">
+                            <input type="hidden" id="ElectricityID_Hidden" value="">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">الشهر</label>
+                                    <select id="ElectricityMonth" required class="input-field">
+                                        <option value="">اختر الشهر</option>
+                                        <option value="1">يناير</option>
+                                        <option value="2">فبراير</option>
+                                        <option value="3">مارس</option>
+                                        <option value="4">أبريل</option>
+                                        <option value="5">مايو</option>
+                                        <option value="6">يونيو</option>
+                                        <option value="7">يوليو</option>
+                                        <option value="8">أغسطس</option>
+                                        <option value="9">سبتمبر</option>
+                                        <option value="10">أكتوبر</option>
+                                        <option value="11">نوفمبر</option>
+                                        <option value="12">ديسمبر</option>
+                                    </select>
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">السنة</label>
+                                    <input type="number" id="ElectricityYear" min="2024" max="2030" value="2024" required class="input-field">
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">المبلغ</label>
+                                    <input type="number" id="ElectricityAmount" step="0.01" required class="input-field">
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">تاريخ الدفع</label>
+                                    <input type="date" id="ElectricityDate" required class="input-field">
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">رقم الفاتورة</label>
+                                    <input type="text" id="ElectricityBillNo" class="input-field" placeholder="اختياري">
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">المحل/الموقع</label>
+                                    <input type="text" id="ElectricityLocation" class="input-field" placeholder="مثال: المحل الرئيسي">
+                                </div>
+                                <div class="md:col-span-3">
+                                    <label class="block text-sm font-medium text-gray-700">ملاحظات</label>
+                                    <textarea id="ElectricityNotes" rows="2" class="input-field"></textarea>
+                                </div>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                                <button type="submit" id="electricity-submit-button" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">حفظ فاتورة الكهرباء</button>
+                                <button type="button" onclick="hideForm('electricity-form')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex justify-end flex-wrap gap-2 mb-4">
+                        <select id="electricity-filter-year" onchange="fetchElectricityBills()" class="p-2 border border-gray-400 rounded-lg focus:ring-amber-500 focus:border-amber-500"></select>
+                    </div>
+
+                    <div id="electricity-summary-stats" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-4">سجل فواتير الكهرباء</h3>
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered">
+                            <thead class="bg-gray-50 border-b border-gray-300">
+                                <tr>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الشهر/السنة</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">المحل</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">المبلغ</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">تاريخ الدفع</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">رقم الفاتورة</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">ملاحظات</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="electricity-table-body" class="bg-white divide-y divide-gray-200">
+                                <tr><td colspan="7" class="text-center py-4 text-gray-500 border border-gray-300">جاري تحميل فواتير الكهرباء...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Modal -->
+            <div id="payment-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center p-4 z-50" onclick="closeModal('payment-modal')">
+                <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg" onclick="event.stopPropagation()">
+                    <h3 id="payment-modal-title" class="text-2xl font-bold mb-4 border-b pb-2">تسجيل دفعة</h3>
+                    <form id="payment-form" onsubmit="handlePaymentSubmit(event)">
+                        <input type="hidden" id="payment-type">
+                        <input type="hidden" id="target-id">
+                        <input type="hidden" id="target-name">
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700">المبلغ المدفوع</label>
+                            <input type="number" id="PaidAmount" step="0.01" required class="input-field" placeholder="أدخل المبلغ">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700">التاريخ</label>
+                            <input type="date" id="PaymentDate" required class="input-field">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700">ملاحظات (مثلاً: شهر/جزء)</label>
+                            <textarea id="PaymentNotes" rows="2" class="input-field"></textarea>
+                        </div>
+
+                        <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                            <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">تسجيل الدفعة</button>
+                            <button type="button" onclick="closeModal('payment-modal')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Invoice Payments Modal -->
+            <div id="invoice-payments-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center p-4 z-50" onclick="closeModal('invoice-payments-modal')">
+                <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-3xl" onclick="event.stopPropagation()">
+                    <h3 id="invoice-payments-modal-title" class="text-2xl font-bold mb-4 border-b pb-2">دفوعات الفاتورة #</h3>
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered">
+                            <thead class="bg-gray-50 border-b border-gray-300">
+                                <tr>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">تاريخ الدفع</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">المبلغ المدفوع</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">مسجل بواسطة</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">ملاحظات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoice-payments-table-body" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <button type="button" onclick="closeModal('invoice-payments-modal')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إغلاق</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Worker Details Modal -->
+            <div id="worker-details-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center p-4 z-50" onclick="closeModal('worker-details-modal')">
+                <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-4xl" onclick="event.stopPropagation()">
+                    <h3 class="text-2xl font-bold mb-4 border-b pb-2">ملخص أجر العامل: <span id="worker-summary-name" class="text-amber-700"></span></h3>
+                    <p class="text-gray-600 mb-4">الأجرة الشهرية الثابتة: <span id="worker-summary-salary" class="font-bold"></span> DH</p>
+                    
+                    <h4 class="text-xl font-semibold mb-3">تتبع الأداء الشهري (الباقي التراكمي)</h4>
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered">
+                            <thead class="bg-gray-50 border-b border-gray-300">
+                                <tr>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الشهر والسنة</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">المستحق الشهري</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">المدفوع في هذا الشهر</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الباقي التراكمي</th>
+                                </tr>
+                            </thead>
+                            <tbody id="worker-monthly-summary-body" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <button type="button" onclick="closeModal('worker-details-modal')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إغلاق</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Printable Invoice Modal -->
+            <div id="printable-invoice-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center p-4 z-50 print:bg-white print:p-0" onclick="closeModal('printable-invoice-modal')">
+                <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-4xl modal-content-custom print:shadow-none print:p-0" onclick="event.stopPropagation()">
+                    <div class="flex justify-between items-center mb-4 no-print">
+                        <h3 class="text-2xl font-bold text-gray-800">طباعة الفاتورة</h3>
+                        <div class="space-x-2 space-x-reverse">
+                            <button onclick="downloadInvoicePDF()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-xl shadow-md transition duration-150">
+                                <i class="fas fa-file-pdf ml-2"></i> تحميل PDF A4
+                            </button>
+                            <button type="button" onclick="closeModal('printable-invoice-modal')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إغلاق</button>
+                        </div>
+                    </div>
+                    
+                    <div id="invoice-print-content" class="invoice-box bg-white">
+                        <!-- Header -->
+                        <div class="flex justify-between items-center border-b-2 border-black pb-4 mb-6">
+                            <div class="flex items-center">
+                                <img src="logo.png" alt="Logo" class="h-24 ml-4">
+                                <div class="text-right">
+                                    <h1 class="text-3xl font-extrabold text-black">MEUBLE ART DESIGN</h1>
+                                    <p class="text-sm text-gray-600">حي النهضة رقم 135 بلوك M</p>
+                                    <p class="text-sm text-gray-600">الهاتف: 0640442778</p>
+                                </div>
+                            </div>
+                            <div class="text-right" style="direction: rtl;">
+                                <h2 class="text-4xl font-black text-black mb-1">فاتورة</h2>
+                                <p class="text-black"><strong>رقم الفاتورة:</strong> <span id="print-invoice-no"></span></p>
+                                <p class="text-black"><strong>التاريخ:</strong> <span id="print-invoice-date"></span></p>
+                            </div>
+                        </div>
+
+                        <!-- Customer Info -->
+                        <div class="mb-8 grid grid-cols-2 gap-4">
+                            <div class="border p-3 rounded">
+                                <h3 class="font-bold border-b mb-2">معلومات الزبون:</h3>
+                                <p><strong>الاسم:</strong> <span id="print-customer-name"></span></p>
+                                <p><strong>الهاتف:</strong> <span id="print-customer-phone"></span></p>
+                            </div>
+                        </div>
+
+                        <!-- Products Table -->
+                        <table class="w-full text-sm mb-6">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="p-2 border border-black text-center">المنتوج / الوصف</th>
+                                    <th class="p-2 border border-black text-center" style="width: 80px;">الكمية</th>
+                                    <th class="p-2 border border-black text-center" style="width: 120px;">ثمن الوحدة</th>
+                                    <th class="p-2 border border-black text-center" style="width: 120px;">المجموع</th>
+                                </tr>
+                            </thead>
+                            <tbody id="print-items-body">
+                                <!-- Injected by JS -->
+                            </tbody>
+                        </table>
+
+                        <!-- Financial Summary -->
+                        <div class="flex justify-end mb-8">
+                            <div class="w-full md:w-1/2 lg:w-1/3">
+                                <div class="flex justify-between p-1 border-b"><span>المجموع الإجمالي:</span> <span id="print-total-amount" class="font-bold"></span></div>
+                                <div class="flex justify-between p-1 border-b"><span>المبلغ المدفوع:</span> <span id="print-paid-amount" class="font-bold"></span></div>
+                                <div class="flex justify-between p-1 border-black border-b-2 bg-gray-50 text-green-600 font-bold" style="color: #16a34a;"><span>الباقي للأداء:</span> <span id="print-remaining-amount" class="font-black" style="color: #16a34a;"></span></div>
+                            </div>
+                        </div>
+
+                        <!-- Payments History -->
+                        <div class="mb-8">
+                            <h4 class="font-bold text-sm mb-2 border-b">سجل الدفعات (تاريخ الطباعة: <span id="print-update-date"></span>):</h4>
+                            <table class="w-full text-xs border border-black">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th class="p-1 border border-black">التاريخ</th>
+                                        <th class="p-1 border border-black">المبلغ</th>
+                                        <th class="p-1 border border-black">ملاحظات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="print-payments-table-body">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="text-center text-xs mt-10 border-t pt-4">
+                            <p>شكراً لثقتكم بنا. يسعدنا دائماً خدمتكم.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shop Details Modal -->
+            <div id="shop-details-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center p-4 z-50" onclick="closeModal('shop-details-modal')">
+                <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-4xl" onclick="event.stopPropagation()">
+                    <h3 class="text-2xl font-bold mb-4 border-b pb-2">ملخص إيجار المحل: <span id="shop-summary-name" class="text-amber-700"></span></h3>
+                    <p class="text-gray-600 mb-4">الإيجار الشهري الثابت: <span id="shop-summary-rent" class="font-bold"></span> DH</p>
+                    
+                    <h4 class="text-xl font-semibold mb-3">تتبع الأداء الشهري (الباقي الشهري)</h4>
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse table-bordered">
+                            <thead class="bg-gray-50 border-b border-gray-300">
+                                <tr>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الشهر والسنة</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">المستحق الشهري</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">المدفوع في هذا الشهر</th>
+                                    <th class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">الباقي الشهري</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shop-monthly-summary-body" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <button type="button" onclick="closeModal('shop-details-modal')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إغلاق</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change Password Modal -->
+            <div id="change-password-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center p-4 z-50" onclick="closeModal('change-password-modal')">
+                <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg modal-content-custom" onclick="event.stopPropagation()">
+                    <h3 class="text-2xl font-bold mb-4 border-b pb-2 text-gray-800">تغيير كلمة المرور</h3>
+                    <form id="change-password-form" onsubmit="handleChangePasswordSubmit(event)">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700">كلمة المرور الحالية</label>
+                            <input type="password" id="current-password" required class="input-field">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700">كلمة المرور الجديدة</label>
+                            <input type="password" id="new-password" required class="input-field">
+                            <p class="text-xs text-gray-500 mt-1">يجب أن لا تقل عن 8 أحرف.</p>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700">تأكيد كلمة المرور الجديدة</label>
+                            <input type="password" id="confirm-new-password" required class="input-field">
+                        </div>
+
+                        <div class="mt-6 flex justify-end space-x-4 space-x-reverse">
+                            <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-xl shadow-md">تغيير</button>
+                            <button type="button" onclick="closeModal('change-password-modal')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-xl">إلغاء</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Mobile Bottom Navigation Bar (Very Premium UI) -->
+            <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 z-40 flex justify-around items-center py-2 px-1 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+                <a id="mobile-nav-dashboard" href="#" onclick="showView('dashboard'); return false;" class="flex flex-col items-center justify-center text-gray-500 hover:text-amber-500 transition-all duration-200 flex-1">
+                    <i class="fas fa-th-large text-lg"></i>
+                    <span class="text-[10px] mt-1 font-semibold">لوحة التحكم</span>
+                </a>
+                <a id="mobile-nav-invoices" href="#" onclick="showView('invoices'); return false;" class="flex flex-col items-center justify-center text-gray-500 hover:text-amber-500 transition-all duration-200 flex-1">
+                    <i class="fas fa-receipt text-lg"></i>
+                    <span class="text-[10px] mt-1 font-semibold">الفواتير</span>
+                </a>
+                <a id="mobile-nav-workers" href="#" onclick="showView('workers'); return false;" class="flex flex-col items-center justify-center text-gray-500 hover:text-amber-500 transition-all duration-200 flex-1">
+                    <i class="fas fa-users-cog text-lg"></i>
+                    <span class="text-[10px] mt-1 font-semibold">الرواتب</span>
+                </a>
+                <a id="mobile-nav-profit-loss" href="#" onclick="showView('profit-loss'); return false;" class="flex flex-col items-center justify-center text-gray-500 hover:text-amber-500 transition-all duration-200 flex-1">
+                    <i class="fas fa-chart-bar text-lg"></i>
+                    <span class="text-[10px] mt-1 font-semibold">التقارير</span>
+                </a>
+                <button onclick="toggleSidebar();" class="flex flex-col items-center justify-center text-gray-500 hover:text-amber-500 transition-all duration-200 flex-1 focus:outline-none">
+                    <i class="fas fa-ellipsis-h text-lg"></i>
+                    <span class="text-[10px] mt-1 font-semibold">المزيد</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
