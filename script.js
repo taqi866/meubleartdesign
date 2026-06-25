@@ -4206,8 +4206,8 @@ async function unverifyInvoice(invoiceNo) {
             const scaleY = scaleX; // Uniform scale to preserve aspect ratio and prevent shape distortion
 
             // رسم شبكة المربعات (Grid Background)
-            ctx.strokeStyle = '#cbd5e1';
-            ctx.lineWidth = 0.8;
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1.0;
             const stepX = 25 * scaleX;
             const stepY = 25 * scaleY;
             for (let x = 0; x < width; x += stepX) {
