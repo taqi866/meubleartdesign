@@ -85,8 +85,8 @@ input[type="number"], input[type="text"], input[type="tel"], textarea {
 .canvas-grid-bg {
     background-color: #ffffff;
     background-image: 
-        linear-gradient(to right, #cbd5e1 1px, transparent 1px),
-        linear-gradient(to bottom, #cbd5e1 1px, transparent 1px);
+        linear-gradient(to right, #94a3b8 1px, transparent 1px),
+        linear-gradient(to bottom, #94a3b8 1px, transparent 1px);
     background-size: 25px 25px; /* حجم المربعات الكبيرة (25px) */
 }
 
