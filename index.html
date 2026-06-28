@@ -814,9 +814,13 @@
                         <div class="space-y-3">
                             <h3 class="font-bold text-gray-700 text-sm uppercase tracking-wider">إضافة أشكال هندسية</h3>
                             <div class="grid grid-cols-2 gap-2">
-                                <button id="sketch-mode-select" onclick="setSketchMode('select')" class="sketch-btn-active col-span-2 flex items-center justify-center space-x-2 space-x-reverse p-2.5 bg-amber-500 text-white border border-amber-500 rounded-xl transition" title="تحديد وتعديل">
+                                <button id="sketch-mode-select" onclick="setSketchMode('select')" class="sketch-btn-active flex items-center justify-center space-x-2 space-x-reverse p-2.5 bg-amber-500 text-white border border-amber-500 rounded-xl transition" title="تحديد وتعديل">
                                     <i class="fas fa-mouse-pointer text-lg"></i>
-                                    <span class="text-xs font-bold mr-2">تحديد وتعديل</span>
+                                    <span class="text-xs font-bold mr-2">تحديد</span>
+                                </button>
+                                <button id="sketch-mode-eraser" onclick="setSketchMode('eraser')" class="flex items-center justify-center space-x-2 space-x-reverse p-2.5 bg-gray-50 border border-gray-200 rounded-xl hover:bg-amber-50 transition" title="ممحاة (حذف الأشكال)">
+                                    <i class="fas fa-eraser text-lg text-gray-600"></i>
+                                    <span class="text-xs font-bold mr-2">ممحاة</span>
                                 </button>
                                 <button onclick="addSketchShape('square')" class="flex items-center space-x-2 space-x-reverse p-2.5 bg-gray-50 border border-gray-200 rounded-xl hover:bg-amber-50 transition">
                                     <i class="far fa-square text-lg text-gray-600"></i>
