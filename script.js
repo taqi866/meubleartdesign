@@ -969,6 +969,8 @@ async function unverifyInvoice(invoiceNo) {
                 if (drawBtn) drawBtn.style.display = '';
                 const selectBtn = document.getElementById('sketch-mode-select');
                 if (selectBtn) selectBtn.style.display = '';
+                const eraserBtn = document.getElementById('sketch-mode-eraser');
+                if (eraserBtn) eraserBtn.style.display = '';
 
                 const shapeButtons = document.querySelectorAll("#sketch-view button[onclick^='addSketchShape']");
                 shapeButtons.forEach(btn => {
@@ -1078,11 +1080,23 @@ async function unverifyInvoice(invoiceNo) {
             // Update UI buttons
             const drawBtn = document.getElementById('sketch-mode-draw');
             const selectBtn = document.getElementById('sketch-mode-select');
+            const eraserBtn = document.getElementById('sketch-mode-eraser');
             const straightBtn = document.getElementById('sketch-mode-straight');
 
             if (drawBtn) drawBtn.className = sketchCurrentMode === 'draw' ? 'sketch-btn-active flex flex-col items-center justify-center p-3 bg-amber-500 text-white border border-amber-500 rounded-xl transition' : 'flex flex-col items-center justify-center p-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-amber-50 transition';
-            if (selectBtn) selectBtn.className = sketchCurrentMode === 'select' ? 'sketch-btn-active col-span-2 flex items-center justify-center space-x-2 space-x-reverse p-2.5 bg-amber-500 text-white border border-amber-500 rounded-xl transition' : 'col-span-2 flex items-center justify-center space-x-2 space-x-reverse p-2.5 bg-gray-50 border border-gray-200 rounded-xl hover:bg-amber-50 transition';
+            if (selectBtn) selectBtn.className = sketchCurrentMode === 'select' ? 'sketch-btn-active flex items-center justify-center space-x-2 space-x-reverse p-2.5 bg-amber-500 text-white border border-amber-500 rounded-xl transition' : 'flex items-center justify-center space-x-2 space-x-reverse p-2.5 bg-gray-50 border border-gray-200 rounded-xl hover:bg-amber-50 transition';
+            if (eraserBtn) eraserBtn.className = sketchCurrentMode === 'eraser' ? 'sketch-btn-active flex items-center justify-center space-x-2 space-x-reverse p-2.5 bg-amber-500 text-white border border-amber-500 rounded-xl transition' : 'flex items-center justify-center space-x-2 space-x-reverse p-2.5 bg-gray-50 border border-gray-200 rounded-xl hover:bg-amber-50 transition';
             if (straightBtn) straightBtn.className = sketchCurrentMode === 'straight' ? 'sketch-btn-active col-span-2 flex items-center justify-center space-x-2 space-x-reverse p-2.5 bg-amber-500 text-white border border-amber-500 rounded-xl transition' : 'col-span-2 flex items-center justify-center space-x-2 space-x-reverse p-2.5 bg-gray-50 border border-gray-200 rounded-xl hover:bg-amber-50 transition';
+
+            if (sketchCanvas) {
+                if (sketchCurrentMode === 'eraser') {
+                    sketchCanvas.style.cursor = 'pointer';
+                } else if (sketchCurrentMode === 'select') {
+                    sketchCanvas.style.cursor = 'default';
+                } else {
+                    sketchCanvas.style.cursor = 'crosshair';
+                }
+            }
 
             if (!selectedSketchShape) {
                 document.getElementById('sketch-shape-editor-controls').classList.add('hidden');
@@ -1702,6 +1716,29 @@ async function unverifyInvoice(invoiceNo) {
             if (e.cancelable) e.preventDefault();
             const p = getSketchCanvasCoords(e);
 
+            if (sketchCurrentMode === 'eraser') {
+                isSketchDrawing = true;
+                let erasedSomething = false;
+                for (let i = sketchShapes.length - 1; i >= 0; i--) {
+                    if (isPointInSketchShape(p, sketchShapes[i])) {
+                        sketchShapes.splice(i, 1);
+                        erasedSomething = true;
+                    }
+                }
+                for (let i = sketchFreehandLines.length - 1; i >= 0; i--) {
+                    if (isPointNearLine(p, sketchFreehandLines[i])) {
+                        sketchFreehandLines.splice(i, 1);
+                        erasedSomething = true;
+                    }
+                }
+                if (erasedSomething) {
+                    selectedSketchShape = null;
+                    updateSketchShapeEditorUI();
+                    drawSketch();
+                }
+                return;
+            }
+
             // 1. Check if we hit handles of the currently selected shape (only if NOT locked)
             if (selectedSketchShape && !selectedSketchShape.isLocked) {
                 const handle = getSketchHandleAtPoint(p, selectedSketchShape);
@@ -1782,6 +1819,28 @@ async function unverifyInvoice(invoiceNo) {
             
             const p = getSketchCanvasCoords(e);
             e.preventDefault();
+
+            if (sketchCurrentMode === 'eraser' && isSketchDrawing) {
+                let erasedSomething = false;
+                for (let i = sketchShapes.length - 1; i >= 0; i--) {
+                    if (isPointInSketchShape(p, sketchShapes[i])) {
+                        sketchShapes.splice(i, 1);
+                        erasedSomething = true;
+                    }
+                }
+                for (let i = sketchFreehandLines.length - 1; i >= 0; i--) {
+                    if (isPointNearLine(p, sketchFreehandLines[i])) {
+                        sketchFreehandLines.splice(i, 1);
+                        erasedSomething = true;
+                    }
+                }
+                if (erasedSomething) {
+                    selectedSketchShape = null;
+                    updateSketchShapeEditorUI();
+                    drawSketch();
+                }
+                return;
+            }
 
             if (isSketchDrawing && sketchCurrentLine) {
                 if (sketchCurrentLine.type === 'straight_line') {
